@@ -4,15 +4,6 @@
 	CREATE DATABASE ComputerStore;
 
 	USE ComputerStore;
-    
-   -- SHOW CREATE TABLE PhieuXuat; 
-    
-    SHOW CREATE TABLE PhieuNhap;
-    
-    ALTER TABLE PhieuXuat DROP FOREIGN KEY phieuxuat_ibfk_1;
-    
-    ALTER TABLE PhieuNhap DROP FOREIGN KEY phieunhap_ibfk_1;
-    
 
 	CREATE TABLE ThietBi (
 		MaThietBi INT PRIMARY KEY, -- Mã thiết bị
