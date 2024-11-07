@@ -37,58 +37,47 @@ const addSuppLiers = async () => {
         const response = await axios.post("http://localhost:3000/api/nhacungcap", newSuppLier);
 
         showMessage('Nhà cung cấp đã được thêm thành công!', 'success');
-        // await getManufacturers();
+        await getSuppLiers();
     } catch (error) {
         showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
     }
     
 };
 
-// const getSuppLiers = async () => {
-//     try {
-//         const response = await axios.get("http://localhost:3000/api/nhasanxuat");
-//         console.log(response.data)
-//         manufacturers.value = response.data;
-//         console.log(manufacturers.value);
-//     } catch (error) {
-//         console.error('Lỗi khi lấy dữ liệu:', error);
-//     }
-// };
+const getSuppLiers = async () => {
+    try {
+        const response = await axios.get("http://localhost:3000/api/nhacungcap");
+        suppLiers.value = response.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu:', error);
+    }
+};
 
-// const deleteManufacturers = async (maNSX) => {
-//     const confirmDelete = confirm("Bạn có chắc chắn muốn xóa nhà sản xuất này không?");
-//     if (!confirmDelete) return;
-//     try {
-//         const response = await axios.delete(`http://localhost:3000/api/nhasanxuat/${maNSX}`);
-//         manufacturers.value = manufacturers.value.filter(manufacturer => manufacturer.MaNSX !== maNSX);
-//         notification.value = {
-//             message: 'Nhà sản xuất đã được xóa thành công!',
-//             type: 'success'
-//         };
-//         await getManufacturers();
-//     } catch (error) {
-//         notification.value = {
-//             message: 'Có lỗi xảy ra, vui lòng thử lại!',
-//             type: 'error'
-//         };
-//     }
-//     setTimeout(() => {
-//         notification.value.message = '';
-//     }, 3000);
-// }
+const deleteSuppliers = async (maNCC) => {
+    const confirmDelete = confirm("Bạn có chắc chắn muốn xóa nhà cung cấp này không?");
+    if (!confirmDelete) return;
+    try {
+        const response = await axios.delete(`http://localhost:3000/api/nhacungcap/${maNCC}`);
+        suppLiers.value = suppLiers.value.filter(suppLier => suppLier.MaNhaCungCap !== maNCC);
+        showMessage('Nhà cung cấp đã được xóa thành công!', 'success');
+        await getSuppLiers();
+    } catch (error) {
+        showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
+    }
+}
 
-// const filteredManufacturers = computed(() => {
-//     if (!searchQuery.value) {
-//         return manufacturers.value;
-//     }
-//     return manufacturers.value.filter(manufacturer =>
-//         manufacturer.TenNSX.toLowerCase().includes(searchQuery.value.toLowerCase())
-//     );
-// });
+const filteredSuppliers = computed(() => {
+    if (!searchQuery.value) {
+        return suppLiers.value;
+    }
+    return suppLiers.value.filter(suppLier =>
+        suppLier.TenNhaCungCap.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+});
 
-// onMounted(() => {
-//     getManufacturers();
-// });
+onMounted(() => {
+    getSuppLiers();
+});
 </script>
 
 <template>
@@ -154,14 +143,11 @@ const addSuppLiers = async () => {
                             </div>
                         </div>
                     </div>
-                    <div class="flex justify-center flex-1 gap-4 max-w-xl">
-                        <input type="text"
+                    <div class="relative flex justify-center flex-1 gap-4 max-w-xl">
+                        <input type="text" v-model="searchQuery"
                             class="items-center w-full p-3 bg-white border-2 border-gray-400 text-[14px] font-semibold tracking-wider text-black rounded-lg focus:outline-none"
                             placeholder="Tìm kiếm nhà cung cấp ..." />
-                        <button
-                            class="font-bold text-[14px] bg-blue-primary text-white px-4 py-2 rounded-lg whitespace-nowrap">
-                            Tìm kiếm
-                        </button>
+                        <i class="fa-solid fa-magnifying-glass absolute top-3 right-4 font-bold text-[25px] text-blue-primary"></i>
                     </div>
                     <div class="h-full bg-white rounded-xl">
                         <div class="text-center py-4 block lg:hidden">
@@ -181,21 +167,23 @@ const addSuppLiers = async () => {
                                     </tr>
                                 </thead>
                                 <tbody class="w-full">
-                                    <tr class="border-t border-slate-500">
-                                        <th class="px-6 py-4 font-medium text-gray-900"></th>
+                                    <tr class="border-t border-slate-500" v-for="suppLier in filteredSuppliers" :key="suppLier.MaNhaCungCap">
+                                        <th class="px-6 py-4 font-medium text-gray-900">{{ suppLier.MaNhaCungCap }}</th>
                                         <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">
+                                        {{ suppLier.TenNhaCungCap }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{ suppLier.SoDienThoai }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">
+                                            {{ suppLier.DiaChi }}
                                         </td>
                                         <td class="flex justify-center items-center gap-2 px-7 py-7 flex-col">
-                                            <a :href="`/edit/`"
+                                            <a :href="`/editSuppliers/${suppLier.MaNhaCungCap}`"
                                                 class="inline-block bg-blue-primary text-white font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Sửa
-                                                thông tin</a>
-                                            <form @submit.prevent="">
+                                                nhà cung cấp</a>
+                                            <form @submit.prevent="deleteSuppliers(suppLier.MaNhaCungCap)">
                                                 <button type="submit"
                                                     class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa
-                                                    thông tin</button>
+                                                    nhà cung cấp</button>
                                             </form>
                                         </td>
                                     </tr>

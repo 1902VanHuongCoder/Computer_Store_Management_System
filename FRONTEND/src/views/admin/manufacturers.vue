@@ -57,20 +57,11 @@ const deleteManufacturers = async (maNSX) => {
     try {
         const response = await axios.delete(`http://localhost:3000/api/nhasanxuat/${maNSX}`);
         manufacturers.value = manufacturers.value.filter(manufacturer => manufacturer.MaNSX !== maNSX);
-        notification.value = {
-            message: 'Nhà sản xuất đã được xóa thành công!',
-            type: 'success'
-        };
+        showMessage('Nhà sản xuất đã được xóa thành công!', 'success');
         await getManufacturers();
     } catch(error) {
-        notification.value = {
-            message: 'Có lỗi xảy ra, vui lòng thử lại!',
-            type: 'error'
-        };
+        showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
-    setTimeout(() => {
-        notification.value.message = '';
-    }, 3000);
 }
 
 const filteredManufacturers = computed(() => {

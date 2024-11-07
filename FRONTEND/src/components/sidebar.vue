@@ -25,7 +25,7 @@ const sidebarMenu = [
         icon: "fa-solid fa-user-group",
         path: "manufacturers",
     },
-    { name: "Thêm admin", icon: "fa-solid fa-user-plus", path: "addAdmin" },
+    { name: "Thêm nhân viên", icon: "fa-solid fa-user-plus", path: "addAdmin" },
     {
         name: "Thông tin phiếu nhập",
         icon: "fa-solid fa-rectangle-list",

@@ -15,6 +15,12 @@ const notification = ref({
     message: "",
     type: ""
 });
+const showMessage = (message, type) => {
+    notification.value = { message, type };
+    setTimeout(() => {
+        notification.value.message = '';
+    }, 3000);
+};  
 const getManufacturersByID = async (id) => {
     try {
         const response = await axios.get(`http://localhost:3000/api/nhasanxuat/${id}`);
@@ -35,23 +41,14 @@ const editManufacturers = async () => {
             QuocGia: country.value,
         };
         const response = await axios.put(`http://localhost:3000/api/nhasanxuat/${idManufacturers.value}`, updateManufacturer);
-        notification.value = {
-            message: 'Thông tin nhà sản xuất đã được cập nhật thành công!',
-            type: 'success'
-        };
+        showMessage('Thông tin nhà sản xuất đã được cập nhật thành công!', 'success');
 
         setTimeout(() => {
             router.push('/manufacturers');
         }, 2000);
     } catch(error) {
-        notification.value = {
-            message: 'Có lỗi xảy ra, vui lòng thử lại!',
-            type: 'error'
-        };
+        showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
-    setTimeout(() => {
-        notification.value.message = '';
-    }, 3000);
 }
 
 onMounted(() => {

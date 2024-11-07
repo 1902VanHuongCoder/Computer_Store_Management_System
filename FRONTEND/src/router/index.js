@@ -84,7 +84,7 @@ const routes = [
     component: Suppliers,
   },
   {
-    path: "/editSuppliers",
+    path: "/editSuppliers/:maNCC",
     name: "Edit Suppliers",
     component: EditSuppliers,
   },
