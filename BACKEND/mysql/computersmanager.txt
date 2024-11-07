@@ -1,0 +1,379 @@
+CREATE DATABASE ComputerStore;
+
+USE ComputerStore;
+
+CREATE TABLE ThietBi (
+	MaThietBi INT PRIMARY KEY, -- Mã thiết bị
+	TenThietBi VARCHAR(255), -- Tên thiết bị
+	MaNSX INT, -- Khóa ngoại đến bảng NhaSanXuat
+	ThongSoKT TEXT, -- Thông số kỹ thuật
+	MaLoai INT, -- Khóa ngoại đến bảng LoaiThietBi
+	GiaThanh DECIMAL(10, 2),  -- Giá thành
+	MaNhaCungCap INT, -- Khóa ngoại đến bảng NhaCungCap
+	FOREIGN KEY (MaNSX) REFERENCES NhaSanXuat(MaNSX), -- Khóa ngoại đến bảng NhaSanXuat
+	FOREIGN KEY (MaLoai) REFERENCES LoaiThietBi(MaLoai), -- Khóa ngoại đến bảng LoaiThietBi
+	FOREIGN KEY (MaNhaCungCap) REFERENCES NhaCungCap(MaNhaCungCap)
+);
+
+CREATE TABLE NhaSanXuat (
+	MaNSX INT PRIMARY KEY, -- Mã nhà sản xuất
+	TenNSX VARCHAR(255), -- Tên nhà sản xuất
+	QuocGia VARCHAR(255) -- Quốc gia
+);
+
+CREATE TABLE NhaCungCap (
+	MaNhaCungCap INT PRIMARY KEY, -- Mã nhà cung cấp
+	TenNhaCungCap VARCHAR(255), -- Tên nhà cung cấp
+	DiaChi TEXT, -- Địa chỉ
+	SoDienThoai VARCHAR(20) -- Số điện thoại
+);
+
+CREATE TABLE LoaiThietBi (
+	MaLoai INT PRIMARY KEY, -- Mã loại thiết bị
+	TenLoai VARCHAR(255), -- Tên loại thiết bị
+	DonViTinh VARCHAR(50), -- Đơn vị tính
+	GhiChu TEXT -- Ghi chú
+);
+
+CREATE TABLE KhachHang (
+	MaKhachHang INT PRIMARY KEY, -- Mã khách hàng
+	TenKhachHang VARCHAR(255), -- Tên khách hàng
+	DiaChi TEXT, -- Địa chỉ
+	SoDienThoai VARCHAR(20) -- Số điện thoại
+);
+
+CREATE TABLE NhanVien (
+	MaNhanVien INT PRIMARY KEY, -- Mã nhân viên
+	HoTen VARCHAR(255), -- Họ tên
+	NgaySinh DATE, -- Ngày sinh
+	SoDienThoai VARCHAR(20) -- Số điện thoại
+);
+
+
+
+
+
+
+
+CREATE TABLE PhieuNhap (
+	MaPN INT PRIMARY KEY, -- Mã phiếu nhập
+	MaNhanVien INT, -- Khóa ngoại đến bảng NhanVien
+	MaNhaCungCap INT, -- Khóa ngoại đến bảng NhaCungCap
+	NgayNhap DATE, -- Ngày nhập
+
+-- Khoan hả chạy dòng lệnh này ********************************
+	FOREIGN KEY (MaNhanVien) REFERENCES NhanVien(MaNhanVien), -- Khóa ngoại đến bảng NhanVien
+
+
+-- Khoan hả chạy dòng lệnh này ******************************
+	FOREIGN KEY (MaNhaCungCap) REFERENCES NhaCungCap(MaNhaCungCap) -- Khóa ngoại đến bảng NhaCungCap
+);
+
+CREATE TABLE ChiTietPhieuNhap (
+	MaPN INT, -- Khóa ngoại đến bảng PhieuNhap
+	MaThietBi INT, -- Khóa ngoại đến bảng ThietBi
+	SoLuong INT, -- Số lượng
+	DonGia DECIMAL(10, 2), -- Đơn giá
+	PRIMARY KEY (MaPN, MaThietBi), -- Khóa chính gồm 2 trường MaPN và MaThietBi
+
+-- Khoan hả chạy dòng lệnh này *******************************
+	FOREIGN KEY (MaPN) REFERENCES PhieuNhap(MaPN), -- Khóa ngoại đến bảng PhieuNhap
+-- Khoan hả chạy dòng lệnh này ********************************
+	FOREIGN KEY (MaThietBi) REFERENCES ThietBi(MaThietBi) -- Khóa ngoại đến bảng ThietBi
+);
+
+CREATE TABLE PhieuXuat (
+	MaPX INT PRIMARY KEY, -- Mã phiếu xuất
+	MaNhanVien INT, -- Khóa ngoại đến bảng NhanVien
+	MaKhachHang INT, -- Khóa ngoại đến bảng KhachHang
+	NgayXuat DATE, -- Ngày xuất
+
+-- Khoan hả chạy dòng lệnh này ********************************
+	FOREIGN KEY (MaNhanVien) REFERENCES NhanVien(MaNhanVien), -- Khóa ngoại đến bảng NhanVien
+	FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang) -- Khóa ngoại đến bảng KhachHang
+);
+
+CREATE TABLE ChiTietPhieuXuat (
+	MaPX INT, -- Khóa ngoại đến bảng PhieuXuat
+	MaThietBi INT, -- Khóa ngoại đến bảng ThietBi
+	SoLuong INT, -- Số lượng
+	DonGia DECIMAL(10, 2), -- Đơn giá
+	PRIMARY KEY (MaPX, MaThietBi), -- Khóa chính gồm 2 trường MaPX và MaThietBi
+-- Khoan hả chạy dòng lệnh này ********************************
+	FOREIGN KEY (MaPX) REFERENCES PhieuXuat(MaPX), -- Khóa ngoại đến bảng PhieuXuat
+	FOREIGN KEY (MaThietBi) REFERENCES ThietBi(MaThietBi) -- Khóa ngoại đến bảng ThietBi
+);
+
+-- NHÀ XUẤT BẢN ------------------------------
+
+-- 2. Tạo Trigger để kiểm tra dữ liệu trước khi thêm mới nhà sản xuất
+DELIMITER //
+CREATE TRIGGER BeforeInsertNhaSanXuat
+BEFORE INSERT ON NhaSanXuat
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên nhà sản xuất không được để trống
+    IF NEW.TenNSX IS NULL OR NEW.TenNSX = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Tên nhà sản xuất không được để trống'; -- Thông báo lỗi
+    END IF;
+    -- Kiểm tra quốc gia không được để trống
+    IF NEW.QuocGia IS NULL OR NEW.QuocGia = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Quốc gia không được để trống'; -- Thông báo lỗi
+    END IF;
+END //
+DELIMITER ;
+DROP TRIGGER IF EXISTS BeforeInsertNhaSanXuat;
+-- 3. Tạo Stored Procedure để lấy tất cả nhà sản xuất
+DELIMITER //
+CREATE PROCEDURE GetAllNhaSanXuat()
+BEGIN
+    -- Lấy toàn bộ thông tin từ bảng NhaSanXuat
+    SELECT * FROM NhaSanXuat;
+END //
+DELIMITER ;
+
+-- 4. Tạo Stored Procedure để lấy nhà sản xuất theo mã (MaNSX)
+DELIMITER //
+CREATE PROCEDURE GetNhaSanXuatById(IN p_MaNSX INT)
+BEGIN
+    -- Lấy thông tin nhà sản xuất dựa vào MaNSX
+    SELECT * FROM NhaSanXuat WHERE MaNSX = p_MaNSX;
+END //
+DELIMITER ;
+
+-- 5. Tạo Stored Procedure để thêm nhà sản xuất mới với kiểm tra dữ liệu đầu vào
+DELIMITER //
+CREATE PROCEDURE AddNhaSanXuat(
+    IN p_TenNSX VARCHAR(255),
+    IN p_QuocGia VARCHAR(255)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
+        ROLLBACK;
+    END;
+    
+    -- Bắt đầu transaction để đảm bảo toàn bộ quá trình thực hiện thành công hoặc rollback
+    START TRANSACTION;
+
+    -- Thêm nhà sản xuất mới vào bảng
+    INSERT INTO NhaSanXuat (TenNSX, QuocGia) VALUES (p_TenNSX, p_QuocGia);
+
+    -- Commit transaction nếu mọi thứ thành công
+    COMMIT;
+END //
+DELIMITER ;
+
+-- 6. Tạo Stored Procedure để xóa nhà sản xuất theo mã (MaNSX)
+DELIMITER //
+CREATE PROCEDURE DeleteNhaSanXuat(
+    IN p_MaNSX INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
+        ROLLBACK;
+    END;
+    
+    -- Bắt đầu transaction
+    START TRANSACTION;
+
+    -- Xóa nhà sản xuất dựa vào MaNSX
+    DELETE FROM NhaSanXuat WHERE MaNSX = p_MaNSX;
+
+    -- Commit transaction nếu mọi thứ thành công
+    COMMIT;
+END //
+DELIMITER ;
+
+-- 7. Tạo Stored Procedure để cập nhật thông tin nhà sản xuất
+DELIMITER //
+CREATE PROCEDURE UpdateNhaSanXuat(
+    IN p_MaNSX INT,
+    IN p_TenNSX VARCHAR(255),
+    IN p_QuocGia VARCHAR(255)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
+        ROLLBACK;
+    END;
+    
+    -- Bắt đầu transaction
+    START TRANSACTION;
+
+    -- Cập nhật thông tin nhà sản xuất dựa trên MaNSX
+    UPDATE NhaSanXuat
+    SET TenNSX = p_TenNSX, QuocGia = p_QuocGia
+    WHERE MaNSX = p_MaNSX;
+
+    -- Commit transaction nếu mọi thứ thành công
+    COMMIT;
+END //
+DELIMITER ;
+
+-- 8. Tạo Trigger để kiểm tra khi cập nhật nhà sản xuất
+DELIMITER //
+CREATE TRIGGER BeforeUpdateNhaSanXuat
+BEFORE UPDATE ON NhaSanXuat
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên nhà sản xuất không được để trống khi cập nhật
+    IF NEW.TenNSX IS NULL OR NEW.TenNSX = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Tên nhà sản xuất không được để trống'; -- Thông báo lỗi
+    END IF;
+END //
+DELIMITER ;
+
+
+-- NHÀ CUNG CẤP ------------------------------
+-- 1. Tạo Trigger để kiểm tra dữ liệu trước khi thêm mới nhà cung cấp
+DELIMITER //
+CREATE TRIGGER BeforeInsertNhaCungCap
+BEFORE INSERT ON NhaCungCap
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên nhà cung cấp không được để trống
+    IF NEW.TenNhaCungCap IS NULL OR NEW.TenNhaCungCap = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Tên nhà cung cấp không được để trống'; -- Thông báo lỗi
+    END IF;
+    -- Kiểm tra số điện thoại
+    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
+    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
+    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
+    END IF;
+    -- Kiểm tra địa chỉ không được để trống
+    IF NEW.DiaChi IS NULL OR NEW.DiaChi = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Địa chỉ không được để trống'; 
+    END IF;
+END //
+DELIMITER ;
+DROP TRIGGER IF EXISTS BeforeInsertNhaCungCap;
+
+-- 2. Tạo Stored Procedure để lấy tất cả nhà cung cấp
+DELIMITER //
+CREATE PROCEDURE GetAllNhaCungCap()
+BEGIN
+    -- Lấy toàn bộ thông tin từ bảng NhaCungCap
+    SELECT * FROM NhaCungCap;
+END //
+DELIMITER ;
+
+-- 3. Tạo Stored Procedure để lấy nhà cung cấp theo mã (MaNhaCungCap)
+DELIMITER //
+CREATE PROCEDURE GetNhaCungCapById(IN p_MaNhaCungCap INT)
+BEGIN
+    -- Lấy thông tin nhà cung cấp dựa vào MaNhaCungCap
+    SELECT * FROM NhaCungCap WHERE MaNhaCungCap = p_MaNhaCungCap;
+END //
+DELIMITER ;
+
+-- 4. Tạo Stored Procedure để thêm nhà cung cấp mới với kiểm tra dữ liệu đầu vào
+DELIMITER //
+CREATE PROCEDURE AddNhaCungCap(
+    IN p_TenNhaCungCap VARCHAR(255),
+    IN p_DiaChi TEXT,
+    IN p_SoDienThoai VARCHAR(20)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
+        ROLLBACK;
+    END;
+    
+    -- Bắt đầu transaction để đảm bảo toàn bộ quá trình thực hiện thành công hoặc rollback
+    START TRANSACTION;
+
+    -- Thêm nhà cung cấp mới vào bảng
+    INSERT INTO NhaCungCap (TenNhaCungCap, DiaChi, SoDienThoai) 
+    VALUES (p_TenNhaCungCap, p_DiaChi, p_SoDienThoai);
+
+    -- Commit transaction nếu mọi thứ thành công
+    COMMIT;
+END //
+DELIMITER ;
+
+-- 5. Tạo Stored Procedure để xóa nhà cung cấp theo mã (MaNhaCungCap)
+DELIMITER //
+CREATE PROCEDURE DeleteNhaCungCap(
+    IN p_MaNhaCungCap INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
+        ROLLBACK;
+    END;
+    
+    -- Bắt đầu transaction
+    START TRANSACTION;
+
+    -- Xóa nhà cung cấp dựa vào MaNhaCungCap
+    DELETE FROM NhaCungCap WHERE MaNhaCungCap = p_MaNhaCungCap;
+
+    -- Commit transaction nếu mọi thứ thành công
+    COMMIT;
+END //
+DELIMITER ;
+
+-- 6. Tạo Stored Procedure để cập nhật thông tin nhà cung cấp
+DELIMITER //
+CREATE PROCEDURE UpdateNhaCungCap(
+    IN p_MaNhaCungCap INT,
+    IN p_TenNhaCungCap VARCHAR(255),
+    IN p_DiaChi TEXT,
+    IN p_SoDienThoai VARCHAR(20)
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
+        ROLLBACK;
+    END;
+    
+    -- Bắt đầu transaction
+    START TRANSACTION;
+
+    -- Cập nhật thông tin nhà cung cấp dựa trên MaNhaCungCap
+    UPDATE NhaCungCap
+    SET TenNhaCungCap = p_TenNhaCungCap, DiaChi = p_DiaChi, SoDienThoai = p_SoDienThoai
+    WHERE MaNhaCungCap = p_MaNhaCungCap;
+
+    -- Commit transaction nếu mọi thứ thành công
+    COMMIT;
+END //
+DELIMITER ;
+
+-- 7. Tạo Trigger để kiểm tra khi cập nhật nhà cung cấp
+DELIMITER //
+CREATE TRIGGER BeforeUpdateNhaCungCap
+BEFORE UPDATE ON NhaCungCap
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên nhà cung cấp không được để trống khi cập nhật
+    IF NEW.TenNhaCungCap IS NULL OR NEW.TenNhaCungCap = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Tên nhà cung cấp không được để trống'; -- Thông báo lỗi
+    END IF;
+    -- Kiểm tra số điện thoại không được để trống khi cập nhật
+    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
+    END IF;
+END //
+DELIMITER ;

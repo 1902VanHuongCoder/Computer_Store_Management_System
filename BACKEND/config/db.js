@@ -2,7 +2,7 @@ const mysql = require('mysql2');
 
 const connection = mysql.createConnection({
     host: "localhost",
-    password: "1808",
+    password: "anh12345", // này t cấu hình theo bên t nghe
     user: "root",
     database: "computerstore"
 });

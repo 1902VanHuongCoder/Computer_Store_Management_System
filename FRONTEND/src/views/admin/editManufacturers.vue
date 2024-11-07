@@ -1,12 +1,66 @@
 <script setup>
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import navbar from '@/components/navbar.vue';
 import sidebar from '@/components/sidebar.vue';
+import axios from 'axios';
+import { useRouter } from 'vue-router';
 
-const products = ref([
-    { id: 1, name: "Pokémon Đặc Biệt - Tập 59", price: "20.000 VNĐ", year: 2017, type: "Truyện tranh (Manga)", quantity: 300, image: "/src/assets/img/TruyenTranh-4.jpg", author: "Hidenori Kusaka, Satoshi Yamamoto", publisher: "Kim Đồng", description: "Trận chiến giành cây cổ thụ - Zeruneasu đã diễn ra! Dù dốc hết sức mình chiến đấu, Koruni vẫn thua trong gang tấc nên đành để cho “cây cổ thụ” và đá khai mở bị cướp đi!! Cảm thấy có lỗi trong việc Furadari bên phía kẻ thù đang dần chiếm được quyền lực! “Vũ khí tối thượng” - Di sản đen tối từ 3 ngàn năm trước cuối cùng cũng xuất hiện!!!!" },
-    { id: 1, name: "Pokémon Đặc Biệt - Tập 59", price: "20.000 VNĐ", year: 2017, type: "Truyện tranh (Manga)", quantity: 300, image: "/src/assets/img/TruyenTranh-4.jpg", author: "Hidenori Kusaka, Satoshi Yamamoto", publisher: "Kim Đồng", description: "Trận chiến giành cây cổ thụ - Zeruneasu đã diễn ra! Dù dốc hết sức mình chiến đấu, Koruni vẫn thua trong gang tấc nên đành để cho “cây cổ thụ” và đá khai mở bị cướp đi!! Cảm thấy có lỗi trong việc Furadari bên phía kẻ thù đang dần chiếm được quyền lực! “Vũ khí tối thượng” - Di sản đen tối từ 3 ngàn năm trước cuối cùng cũng xuất hiện!!!!" },
-]);
+const router = useRouter();
+
+const manufacturers = ref([]);
+const idManufacturers = ref("");
+const nameManufacturers = ref("");
+const country = ref("");
+const notification = ref({
+    message: "",
+    type: ""
+});
+const getManufacturersByID = async (id) => {
+    try {
+        const response = await axios.get(`http://localhost:3000/api/nhasanxuat/${id}`);
+        nameManufacturers.value = response.data[0].TenNSX;
+        console.log(nameManufacturers.value)
+        country.value = response.data[0].QuocGia;
+        
+    } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu:', error);
+    }
+};
+
+const editManufacturers = async () => {
+    try {
+        const updateManufacturer = {
+            MaNSX: idManufacturers.value,
+            TenNSX: nameManufacturers.value,
+            QuocGia: country.value,
+        };
+        const response = await axios.put(`http://localhost:3000/api/nhasanxuat/${idManufacturers.value}`, updateManufacturer);
+        notification.value = {
+            message: 'Thông tin nhà sản xuất đã được cập nhật thành công!',
+            type: 'success'
+        };
+
+        setTimeout(() => {
+            router.push('/manufacturers');
+        }, 2000);
+    } catch(error) {
+        notification.value = {
+            message: 'Có lỗi xảy ra, vui lòng thử lại!',
+            type: 'error'
+        };
+    }
+    setTimeout(() => {
+        notification.value.message = '';
+    }, 3000);
+}
+
+onMounted(() => {
+    const idNSX = router.currentRoute.value.params.maNSX;
+    idManufacturers.value = idNSX;
+    console.log(idNSX);
+    getManufacturersByID(idNSX);
+});
+    
 </script>
 
 <template>
@@ -15,7 +69,7 @@ const products = ref([
             <sidebar />
             <div class="flex flex-col gap-5 w-full p-3">
                 <navbar />
-                <div class="flex flex-col gap-4 w-full overflow-auto max-h-[calc(100vh-150px)]">
+                <div class="relative flex flex-col gap-4 w-full overflow-auto max-h-[calc(100vh-150px)]">
                     <div class="flex-grow lg:py-8 lg:px-24 p-4">
                         <div class="flex-grow lg:py-8 lg:px-24 p-4">
                             <div class="container max-w-screen-lg mx-auto">
@@ -27,22 +81,15 @@ const products = ref([
                                                 <p>Vui lòng điền thông tin đầy đủ.</p>
                                             </div>
                                             <div class="lg:col-span-2">
-                                                <form action="" method="post"
+                                                <form @submit.prevent="editManufacturers" action="" method="POST"
                                                     class="grid gap-4 gap-y-3 text-sm grid-cols-1 md:grid-cols-5"
                                                     enctype="multipart/form-data">
-                                                    <div class="md:col-span-5">
-                                                        <label for="idManufacturers"
-                                                            class="font-semibold text-[16px]">Mã nhà sản xuất</label>
-                                                        <input type="text" name="idManufacturers" id="idManufacturers"
-                                                            class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
-                                                            placeholder="Nhập mã nhà sản xuất ..." />
-                                                    </div>
 
                                                     <div class="md:col-span-5">
                                                         <label for="nameManufacturers"
                                                             class="font-semibold text-[16px]">Tên nhà sản xuất</label>
-                                                        <input type="text" name="nameManufacturers"
-                                                            id="nameManufacturers"
+                                                        <input v-model="nameManufacturers" type="text"
+                                                            name="nameManufacturers" id="nameManufacturers"
                                                             class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                             placeholder="Nhập tên nhà sản xuất ..." />
                                                     </div>
@@ -50,7 +97,7 @@ const products = ref([
                                                     <div class="md:col-span-5">
                                                         <label for="country" class="font-semibold text-[16px]">Quốc
                                                             gia</label>
-                                                        <input type="text" name="country" id="country"
+                                                        <input type="text" name="country" id="country" v-model="country"
                                                             class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                             placeholder="Nhập quốc gia ..." />
                                                     </div>
@@ -58,7 +105,8 @@ const products = ref([
                                                     <div class="md:col-span-5 text-right">
                                                         <div class="inline-flex items-end">
                                                             <button type="submit"
-                                                                class="bg-[#333f48] hover:bg-blue-primary text-white font-bold py-2 px-4 rounded">Chỉnh sửa
+                                                                class="bg-[#333f48] hover:bg-blue-primary text-white font-bold py-2 px-4 rounded">Chỉnh
+                                                                sửa
                                                                 nhà sản xuất</button>
                                                         </div>
                                                     </div>
@@ -70,10 +118,28 @@ const products = ref([
                             </div>
                         </div>
                     </div>
+                    <transition name="slide-fade" mode="out-in">
+                        <div v-if="notification.message"
+                            :class="`fixed top-4 right-4 p-5 bg-white shadow-lg rounded-lg z-10 flex items-center space-x-2 
+                        ${notification.type === 'success' ? 'border-l-8 border-blue-primary text-blue-primary' : 'border-l-8 border-red-500 text-red-600'}`">
+                            <p class="text-[18px] font-semibold">{{ notification.message }}</p>
+                        </div>
+                    </transition>
                 </div>
             </div>
         </div>
     </div>
 </template>
 
-<style></style>
+<style scoped>
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+    transition: all 0.5s ease;
+}
+
+.slide-fade-enter,
+.slide-fade-leave-to {
+    transform: translateX(100%);
+    opacity: 0;
+}
+</style>

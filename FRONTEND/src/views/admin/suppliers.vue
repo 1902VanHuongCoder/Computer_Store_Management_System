@@ -1,12 +1,94 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, computed } from "vue";
+import axios from "axios";
 import navbar from '@/components/navbar.vue';
 import sidebar from '@/components/sidebar.vue';
 
-const products = ref([
-    { id: 1, name: "Pokémon Đặc Biệt - Tập 59", price: "20.000 VNĐ", year: 2017, type: "Truyện tranh (Manga)", quantity: 300, image: "/src/assets/img/TruyenTranh-4.jpg", author: "Hidenori Kusaka, Satoshi Yamamoto", publisher: "Kim Đồng", description: "Trận chiến giành cây cổ thụ - Zeruneasu đã diễn ra! Dù dốc hết sức mình chiến đấu, Koruni vẫn thua trong gang tấc nên đành để cho “cây cổ thụ” và đá khai mở bị cướp đi!! Cảm thấy có lỗi trong việc Furadari bên phía kẻ thù đang dần chiếm được quyền lực! “Vũ khí tối thượng” - Di sản đen tối từ 3 ngàn năm trước cuối cùng cũng xuất hiện!!!!" },
-    { id: 1, name: "Pokémon Đặc Biệt - Tập 59", price: "20.000 VNĐ", year: 2017, type: "Truyện tranh (Manga)", quantity: 300, image: "/src/assets/img/TruyenTranh-4.jpg", author: "Hidenori Kusaka, Satoshi Yamamoto", publisher: "Kim Đồng", description: "Trận chiến giành cây cổ thụ - Zeruneasu đã diễn ra! Dù dốc hết sức mình chiến đấu, Koruni vẫn thua trong gang tấc nên đành để cho “cây cổ thụ” và đá khai mở bị cướp đi!! Cảm thấy có lỗi trong việc Furadari bên phía kẻ thù đang dần chiếm được quyền lực! “Vũ khí tối thượng” - Di sản đen tối từ 3 ngàn năm trước cuối cùng cũng xuất hiện!!!!" },
-]);
+const suppLiers = ref([]);
+const nameSuppliers = ref("");
+const phoneSuppliers = ref("");
+const addressSuppliers = ref(""); 
+const searchQuery = ref("");
+const notification = ref({ message: '', type: '' });
+const showMessage = (message, type) => {
+    notification.value = { message, type };
+    setTimeout(() => {
+        notification.value.message = '';
+    }, 3000);
+};  
+
+const addSuppLiers = async () => {
+    if (!nameSuppliers.value.trim() || !phoneSuppliers.value.trim() || !addressSuppliers.value.trim()) {
+        return showMessage('Vui lòng nhập đầy đủ thông tin!', 'error'); 
+    }
+
+    const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    if (!phonePattern.test(phoneSuppliers.value.trim())) {
+        return showMessage('Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại hợp lệ.', 'error'); 
+    }
+
+    try {
+        const newSuppLier = {
+            TenNhaCungCap: nameSuppliers.value,
+            DiaChi: addressSuppliers.value,
+            SoDienThoai: phoneSuppliers.value,
+        };
+
+        const response = await axios.post("http://localhost:3000/api/nhacungcap", newSuppLier);
+
+        showMessage('Nhà cung cấp đã được thêm thành công!', 'success');
+        // await getManufacturers();
+    } catch (error) {
+        showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
+    }
+    
+};
+
+// const getSuppLiers = async () => {
+//     try {
+//         const response = await axios.get("http://localhost:3000/api/nhasanxuat");
+//         console.log(response.data)
+//         manufacturers.value = response.data;
+//         console.log(manufacturers.value);
+//     } catch (error) {
+//         console.error('Lỗi khi lấy dữ liệu:', error);
+//     }
+// };
+
+// const deleteManufacturers = async (maNSX) => {
+//     const confirmDelete = confirm("Bạn có chắc chắn muốn xóa nhà sản xuất này không?");
+//     if (!confirmDelete) return;
+//     try {
+//         const response = await axios.delete(`http://localhost:3000/api/nhasanxuat/${maNSX}`);
+//         manufacturers.value = manufacturers.value.filter(manufacturer => manufacturer.MaNSX !== maNSX);
+//         notification.value = {
+//             message: 'Nhà sản xuất đã được xóa thành công!',
+//             type: 'success'
+//         };
+//         await getManufacturers();
+//     } catch (error) {
+//         notification.value = {
+//             message: 'Có lỗi xảy ra, vui lòng thử lại!',
+//             type: 'error'
+//         };
+//     }
+//     setTimeout(() => {
+//         notification.value.message = '';
+//     }, 3000);
+// }
+
+// const filteredManufacturers = computed(() => {
+//     if (!searchQuery.value) {
+//         return manufacturers.value;
+//     }
+//     return manufacturers.value.filter(manufacturer =>
+//         manufacturer.TenNSX.toLowerCase().includes(searchQuery.value.toLowerCase())
+//     );
+// });
+
+// onMounted(() => {
+//     getManufacturers();
+// });
 </script>
 
 <template>
@@ -15,7 +97,7 @@ const products = ref([
             <sidebar />
             <div class="flex flex-col gap-5 w-full p-3">
                 <navbar />
-                <div class="flex flex-col gap-4 w-full overflow-auto max-h-[calc(100vh-150px)]">
+                <div class="relative flex flex-col gap-4 w-full overflow-auto max-h-[calc(100vh-150px)]">
                     <div class="flex-grow lg:py-8 lg:px-24 p-4">
                         <div class="container max-w-screen-lg mx-auto">
                             <div>
@@ -26,33 +108,33 @@ const products = ref([
                                             <p>Vui lòng điền thông tin đầy đủ.</p>
                                         </div>
                                         <div class="lg:col-span-2">
-                                            <form action="" method="post"
+                                            <form @submit.prevent="addSuppLiers" action="" method="POST"
                                                 class="grid gap-4 gap-y-3 text-sm grid-cols-1 md:grid-cols-5"
                                                 enctype="multipart/form-data">
-                                                <div class="md:col-span-5">
-                                                    <label for="idSuppliers" class="font-semibold text-[16px]">Mã nhà cung cấp</label>
-                                                    <input type="text" name="idSuppliers" id="idSuppliers"
-                                                        class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
-                                                        placeholder="Nhập mã nhà cung cấp ..." />
-                                                </div>
 
                                                 <div class="md:col-span-5">
-                                                    <label for="nameSuppliers" class="font-semibold text-[16px]">Tên nhà cung cấp</label>
+                                                    <label for="nameSuppliers" class="font-semibold text-[16px]">Tên nhà
+                                                        cung cấp</label>
                                                     <input type="text" name="nameSuppliers" id="nameSuppliers"
+                                                        v-model="nameSuppliers"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập tên nhà cung cấp ..." />
                                                 </div>
 
                                                 <div class="md:col-span-5">
-                                                    <label for="phone" class="font-semibold text-[16px]">Số điện thoại</label>
-                                                    <input type="text" name="phone" id="phone"
+                                                    <label for="phoneSuppliers" class="font-semibold text-[16px]">Số
+                                                        điện thoại</label>
+                                                    <input type="text" name="phoneSuppliers" id="phoneSuppliers"
+                                                        v-model="phoneSuppliers"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập số điện thoại ..." />
                                                 </div>
 
                                                 <div class="md:col-span-5">
-                                                    <label for="address" class="font-semibold text-[16px]">Địa chỉ</label>
-                                                    <input type="text" name="address" id="address"
+                                                    <label for="addressSuppliers" class="font-semibold text-[16px]">Địa
+                                                        chỉ</label>
+                                                    <input type="text" v-model="addressSuppliers"
+                                                        name="addressSuppliers" id="addressSuppliers"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập địa chỉ ..." />
                                                 </div>
@@ -60,7 +142,8 @@ const products = ref([
                                                 <div class="md:col-span-5 text-right">
                                                     <div class="inline-flex items-end">
                                                         <button type="submit"
-                                                            class="bg-[#333f48] hover:bg-blue-primary text-white font-bold py-2 px-4 rounded">Thêm nhà cung cấp</button>
+                                                            class="bg-[#333f48] hover:bg-blue-primary text-white font-bold py-2 px-4 rounded">Thêm
+                                                            nhà cung cấp</button>
                                                     </div>
                                                 </div>
 
@@ -88,7 +171,8 @@ const products = ref([
                             <table class="w-full border-collapse whitespace-nowrap text-center text-sm text-gray-500">
                                 <thead class="">
                                     <tr>
-                                        <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã nhà cung cấp</th>
+                                        <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã nhà cung cấp
+                                        </th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Tên nhà cung cấp
                                         </th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Số điện thoại</th>
@@ -97,22 +181,18 @@ const products = ref([
                                     </tr>
                                 </thead>
                                 <tbody class="w-full">
-                                    <tr class="border-t border-slate-500" v-for="product in products" :key="product.id">
-                                        <th class="px-6 py-4 font-medium text-gray-900">{{ product.id }}</th>
-                                        <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
-                                            product.name }}
+                                    <tr class="border-t border-slate-500">
+                                        <th class="px-6 py-4 font-medium text-gray-900"></th>
+                                        <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
-                                            product.price
-                                            }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
-                                            product.year }}
+                                        <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis"></td>
+                                        <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">
                                         </td>
                                         <td class="flex justify-center items-center gap-2 px-7 py-7 flex-col">
-                                            <a :href="`/edit/${product.id}`"
+                                            <a :href="`/edit/`"
                                                 class="inline-block bg-blue-primary text-white font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Sửa
                                                 thông tin</a>
-                                            <form @submit.prevent="deleteProduct(product.id)">
+                                            <form @submit.prevent="">
                                                 <button type="submit"
                                                     class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa
                                                     thông tin</button>
@@ -123,10 +203,28 @@ const products = ref([
                             </table>
                         </div>
                     </div>
+                    <transition name="slide-fade" mode="out-in">
+                        <div v-if="notification.message"
+                            :class="`fixed top-4 right-4 p-5 bg-white shadow-lg rounded-lg z-10 flex items-center space-x-2 
+                        ${notification.type === 'success' ? 'border-l-8 border-blue-primary text-blue-primary' : 'border-l-8 border-red-500 text-red-600'}`">
+                            <p class="text-[18px] font-semibold">{{ notification.message }}</p>
+                        </div>
+                    </transition>
                 </div>
             </div>
         </div>
     </div>
 </template>
 
-<style></style>
+<style scoped>
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+    transition: all 0.5s ease;
+}
+
+.slide-fade-enter,
+.slide-fade-leave-to {
+    transform: translateX(100%);
+    opacity: 0;
+}
+</style>
