@@ -359,7 +359,6 @@ BEGIN
 END //
 DELIMITER ;
 
--- 7. Tạo Trigger để kiểm tra khi cập nhật nhà cung cấp
 DELIMITER //
 CREATE TRIGGER BeforeUpdateNhaCungCap
 BEFORE UPDATE ON NhaCungCap
@@ -367,13 +366,153 @@ FOR EACH ROW
 BEGIN
     -- Kiểm tra tên nhà cung cấp không được để trống khi cập nhật
     IF NEW.TenNhaCungCap IS NULL OR NEW.TenNhaCungCap = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Tên nhà cung cấp không được để trống'; -- Thông báo lỗi
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Tên nhà cung cấp không được để trống khi cập nhật';
     END IF;
-    -- Kiểm tra số điện thoại không được để trống khi cập nhật
+
+    -- Kiểm tra số điện thoại khi cập nhật
     IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống khi cập nhật';
+    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
+    
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số khi cập nhật';
+    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số khi cập nhật';
+    END IF;
+DELIMITER ;
+DROP TRIGGER IF EXISTS BeforeUpdateNhaCungCap;
+
+-- LOẠI THIET BỊ ------------------------------
+-- 1. Tạo Trigger để kiểm tra dữ liệu
+DELIMITER //
+CREATE TRIGGER BeforeInsertLoaiThietBi
+BEFORE INSERT ON LoaiThietBi
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên loại thiết bị không được để trống
+    IF NEW.TenLoai IS NULL OR NEW.TenLoai = '' THEN
         SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
+        SET MESSAGE_TEXT = 'Tên loại thiết bị không được để trống'; -- Thông báo lỗi
+    END IF;
+    -- Kiểm tra đơn vị tính không được để trống
+    IF NEW.DonViTinh IS NULL OR NEW.DonViTinh = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Đơn vị tính không được để trống'; -- Thông báo lỗi
+    END IF;
+END //
+DELIMITER ;
+
+-- 2. Lấy tất cả
+DELIMITER //
+CREATE PROCEDURE GetAllLoaiThietBi()
+BEGIN
+    SELECT * FROM LoaiThietBi;
+END //
+DELIMITER ;
+
+-- 3. Lấy theo id
+DELIMITER //
+CREATE PROCEDURE GetLoaiThietBiById(IN p_MaLoai INT)
+BEGIN
+    SELECT * FROM LoaiThietBi WHERE MaLoai = p_MaLoai;
+END //
+DELIMITER ;
+
+-- 4. Thêm loại thiết bị
+DELIMITER //
+CREATE PROCEDURE AddLoaiThietBi(
+    IN p_TenLoai VARCHAR(255),
+    IN p_DonViTinh VARCHAR(50),
+    IN p_GhiChu TEXT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
+        ROLLBACK;
+    END;
+
+    -- Bắt đầu transaction để đảm bảo toàn bộ quá trình thực hiện thành công hoặc rollback
+    START TRANSACTION;
+
+    -- Thêm loại thiết bị mới vào bảng
+    INSERT INTO LoaiThietBi (TenLoai, DonViTinh, GhiChu) 
+    VALUES (p_TenLoai, p_DonViTinh, p_GhiChu);
+
+    -- Commit transaction nếu mọi thứ thành công
+    COMMIT;
+END //
+DELIMITER ;
+
+-- 5. Xóa loại thiết bị
+DELIMITER //
+CREATE PROCEDURE DeleteLoaiThietBi(
+    IN p_MaLoai INT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
+        ROLLBACK;
+    END;
+
+    -- Bắt đầu transaction
+    START TRANSACTION;
+
+    -- Xóa loại thiết bị dựa vào MaLoai
+    DELETE FROM LoaiThietBi WHERE MaLoai = p_MaLoai;
+
+    -- Commit transaction nếu mọi thứ thành công
+    COMMIT;
+END //
+DELIMITER ;
+
+-- 6. Chỉnh sửa loại thiết bị
+DELIMITER //
+CREATE PROCEDURE UpdateLoaiThietBi(
+    IN p_MaLoai INT,
+    IN p_TenLoai VARCHAR(255),
+    IN p_DonViTinh VARCHAR(50),
+    IN p_GhiChu TEXT
+)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
+        ROLLBACK;
+    END;
+
+    -- Bắt đầu transaction
+    START TRANSACTION;
+
+    -- Cập nhật thông tin loại thiết bị dựa trên MaLoai
+    UPDATE LoaiThietBi
+    SET TenLoai = p_TenLoai, DonViTinh = p_DonViTinh, GhiChu = p_GhiChu
+    WHERE MaLoai = p_MaLoai;
+
+    -- Commit transaction nếu mọi thứ thành công
+    COMMIT;
+END //
+DELIMITER ;
+
+-- 7. Tạo Trigger để kiểm tra khi cập nhật loại thiết bị
+DELIMITER //
+CREATE TRIGGER BeforeUpdateLoaiThietBi
+BEFORE UPDATE ON LoaiThietBi
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên loại thiết bị không được để trống khi cập nhật
+    IF NEW.TenLoai IS NULL OR NEW.TenLoai = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Tên loại thiết bị không được để trống'; -- Thông báo lỗi
+    END IF;
+    -- Kiểm tra đơn vị tính không được để trống khi cập nhật
+    IF NEW.DonViTinh IS NULL OR NEW.DonViTinh = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Đơn vị tính không được để trống'; -- Thông báo lỗi
     END IF;
 END //
 DELIMITER ;
