@@ -16,6 +16,8 @@ import Suppliers from "../views/admin/suppliers.vue";
 import EditSuppliers from "../views/admin/editSuppliers.vue";
 import Manufacturers from "../views/admin/manufacturers.vue";
 import EditManufacturers from "../views/admin/editManufacturers.vue";
+import TypeDevice from "../views/admin/typeDevice.vue";
+import EditTypeDevice from "../views/admin/editTypeDevice.vue"
 
 const routes = [
   {
@@ -98,6 +100,16 @@ const routes = [
     name: "Edit Manufacturers",
     component: EditManufacturers,
   },
+  {
+    path: "/typeDevice",
+    name: "Type Devices",
+    component: TypeDevice,
+  },
+  {
+    path: "/editTypeDevice/:maLoaiThietBi",
+    name: "Edit Type Devices",
+    component: EditTypeDevice,
+  }
 ];
 
 const isLoading = ref(false);

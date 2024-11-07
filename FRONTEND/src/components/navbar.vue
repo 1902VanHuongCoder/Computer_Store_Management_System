@@ -18,6 +18,11 @@ const sidebarMobile = [
         path: "addProduct",
     },
     {
+        name: "Thêm loại thiết bị",
+        icon: "fa-solid fa-tags",
+        path: "addTypeDevice",
+    },
+    {
         name: "Thêm nhà cung cấp",
         icon: "fa-solid fa-user-tie",
         path: "suppliers",

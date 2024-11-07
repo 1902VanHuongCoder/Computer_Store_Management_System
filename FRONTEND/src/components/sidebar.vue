@@ -16,6 +16,11 @@ const sidebarMenu = [
         path: "addProduct",
     },
     {
+        name: "Thêm loại thiết bị",
+        icon: "fa-solid fa-tags",
+        path: "addTypeDevice",
+    },
+    {
         name: "Thêm nhà cung cấp",
         icon: "fa-solid fa-user-tie",
         path: "suppliers",
@@ -51,7 +56,7 @@ const sidebarMenu = [
         <h2 class="font-semibold text-gray-400 text-lg uppercase">Computer Store Manager</h2>
         <ul class="flex flex-col gap-3">
             <router-link :to="item.path" v-for="item in sidebarMenu" :key="item"
-                class="flex gap-3 items-center font-semibold text-gray-700 cursor-pointer px-2 py-4 shadow-none hover:bg-blue-primary hover:text-white rounded-lg transition-all duration-200 hover:shadow-xl">
+                class="flex gap-3 items-center font-semibold text-gray-700 cursor-pointer px-2 py-3 shadow-none hover:bg-blue-primary hover:text-white rounded-lg transition-all duration-200 hover:shadow-xl">
                 <i :class="item.icon"></i>
                 <p>{{ item.name }}</p>
             </router-link>
