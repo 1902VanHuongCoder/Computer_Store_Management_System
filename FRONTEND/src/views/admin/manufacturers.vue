@@ -84,7 +84,7 @@ onMounted(() => {
             <sidebar />
             <div class="flex flex-col gap-5 w-full p-3">
                 <navbar />
-                <div class="relative flex flex-col gap-4 w-full overflow-auto max-h-[calc(100vh-150px)]">
+                <div class="relative flex flex-col gap-4 w-full overflow-y-auto max-h-[calc(100vh-150px)]">
                     <div class="flex-grow lg:py-8 lg:px-24 p-4">
                         <div class="container max-w-screen-lg mx-auto">
                             <div>
@@ -136,7 +136,7 @@ onMounted(() => {
                             placeholder="Tìm kiếm nhà sản xuất ..." />
                         <i class="fa-solid fa-magnifying-glass absolute top-3 right-4 font-bold text-[25px] text-blue-primary"></i>
                     </div>
-                    <div class="h-full bg-white rounded-xl">
+                    <div class=" bg-white rounded-xl">
                         <div class="text-center py-4 block lg:hidden">
                             <h2 class="font-bold text-blue-primary text-[18px]">THÔNG TIN NHÀ SẢN XUẤT</h2>
                         </div>
