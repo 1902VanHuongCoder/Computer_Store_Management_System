@@ -516,3 +516,138 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+
+-- KHÁCH HÀNG -------------
+-- 1. Kiểm tra trước khi thêm
+DELIMITER //
+CREATE TRIGGER BeforeInsertKhachHang
+BEFORE INSERT ON KhachHang
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên khách hàng không được để trống
+    IF NEW.TenKhachHang IS NULL OR NEW.TenKhachHang = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Tên khách hàng không được để trống';
+    END IF;
+    
+    -- Kiểm tra số điện thoại không được để trống và chỉ chứa số
+    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống';
+    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số';
+    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số';
+    END IF;
+
+    -- Kiểm tra địa chỉ không được để trống
+    IF NEW.DiaChi IS NULL OR NEW.DiaChi = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Địa chỉ không được để trống';
+    END IF;
+END //
+DELIMITER ;
+
+-- 2. Lấy tất cả -------------
+DELIMITER //
+CREATE PROCEDURE GetAllKhachHang()
+BEGIN
+    -- Lấy toàn bộ thông tin từ bảng KhachHang
+    SELECT * FROM KhachHang;
+END //
+DELIMITER ;
+
+-- 3. Lấy theo mã -------------
+DELIMITER //
+CREATE PROCEDURE GetKhachHangById(IN p_MaKhachHang INT)
+BEGIN
+    -- Lấy thông tin khách hàng dựa vào MaKhachHang
+    SELECT * FROM KhachHang WHERE MaKhachHang = p_MaKhachHang;
+END //
+DELIMITER ;
+
+-- 4. Thêm khách hàng ------------
+DELIMITER //
+CREATE PROCEDURE AddKhachHang(
+    IN p_TenKhachHang VARCHAR(255),
+    IN p_DiaChi TEXT,
+    IN p_SoDienThoai VARCHAR(20)
+)
+BEGIN
+    -- Thêm khách hàng mới vào bảng KhachHang
+    INSERT INTO KhachHang (TenKhachHang, DiaChi, SoDienThoai) 
+    VALUES (p_TenKhachHang, p_DiaChi, p_SoDienThoai);
+END //
+DELIMITER ;
+
+-- 5. Xóa khách hàng ---------------
+DELIMITER //
+CREATE PROCEDURE DeleteKhachHang(
+    IN p_MaKhachHang INT
+)
+BEGIN
+    -- Xóa khách hàng dựa vào MaKhachHang
+    DELETE FROM KhachHang WHERE MaKhachHang = p_MaKhachHang;
+END //
+DELIMITER ;
+
+-- 6. Chỉnh sửa khách hàng ------------
+DELIMITER //
+CREATE PROCEDURE UpdateKhachHang(
+    IN p_MaKhachHang INT,
+    IN p_TenKhachHang VARCHAR(255),
+    IN p_DiaChi TEXT,
+    IN p_SoDienThoai VARCHAR(20)
+)
+BEGIN
+    -- Cập nhật thông tin khách hàng dựa trên MaKhachHang
+    UPDATE KhachHang
+    SET TenKhachHang = p_TenKhachHang, DiaChi = p_DiaChi, SoDienThoai = p_SoDienThoai
+    WHERE MaKhachHang = p_MaKhachHang;
+END //
+DELIMITER ;
+
+-- 7. Kiểm tra khi thêm
+DELIMITER //
+CREATE TRIGGER BeforeUpdateKhachHang
+BEFORE UPDATE ON KhachHang
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên khách hàng không được để trống khi cập nhật
+    IF NEW.TenKhachHang IS NULL OR NEW.TenKhachHang = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Tên khách hàng không được để trống';
+    END IF;
+
+    -- Kiểm tra số điện thoại khi cập nhật
+    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống';
+    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số';
+    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số';
+    END IF;
+
+    -- Kiểm tra địa chỉ không được để trống
+    IF NEW.DiaChi IS NULL OR NEW.DiaChi = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Địa chỉ không được để trống';
+    END IF;
+END //
+DELIMITER ;
+
+ALTER TABLE chiTietPhieuNhap DROP FOREIGN KEY chiTietPhieuNhap_ibfk_2;  
+ALTER TABLE chiTietPhieuXuat DROP FOREIGN KEY chiTietPhieuXuat_ibfk_2;  
+
+ALTER TABLE PhieuXuat DROP FOREIGN KEY phieuxuat_ibfk_1;
+
+ALTER TABLE NhanVien CHANGE COLUMN MaNhanVien MaNhanVien VARCHAR(255) NOT NULL;
+
+ALTER TABLE NhanVien 
+ADD COLUMN ChucVu VARCHAR(255),
+ADD COLUMN MatKhau VARCHAR(255);
