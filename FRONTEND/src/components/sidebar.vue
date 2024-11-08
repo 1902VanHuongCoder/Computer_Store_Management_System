@@ -55,7 +55,7 @@ const sidebarMenu = [
         <hr class="bg-blue-primary h-[2px]" />
         <h2 class="font-semibold text-gray-400 text-lg uppercase">Computer Store Manager</h2>
         <ul class="flex flex-col gap-3">
-            <router-link :to="item.path" v-for="item in sidebarMenu" :key="item"
+            <router-link :to="item.path" v-for="item in sidebarMenu" :key="item" active-class="active-link"
                 class="flex gap-3 text-[16px] items-center font-semibold text-gray-700 cursor-pointer px-2 py-3 shadow-none hover:bg-blue-primary hover:text-white rounded-lg transition-all duration-200 hover:shadow-xl">
                 <i :class="item.icon"></i>
                 <p>{{ item.name }}</p>
@@ -64,4 +64,10 @@ const sidebarMenu = [
     </div>
 </template>
 
-<style></style>
+<style scoped>
+.active-link {
+    background-color: #254E7A;
+    color: #fff;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+</style>

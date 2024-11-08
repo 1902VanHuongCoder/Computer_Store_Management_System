@@ -88,10 +88,6 @@ import sidebar from '@/components/sidebar.vue';
                                         rows="3" placeholder="Hãy thêm mô tả ..."></textarea>
                                 </div>
                             </div>
-                            <label
-                                class="font-bold mb-1 block text-base text-gray-700 after:ml-0.5 after:text-red-500 after:content-['*']">Chọn
-                                ảnh chính thiết bị :</label>
-                            <input type="file" name="images[]" multiple class="font-bold">
                             <div class="text-center">
                                 <button type="submit"
                                     class="inline-block rounded-lg bg-blue-primary px-6 py-3 text-sm font-bold text-[#fff] shadow-md hover:bg-blue-secondary hover:scale-110 transition-all duration-200">Thêm

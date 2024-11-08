@@ -25,13 +25,10 @@ const products = ref([
                                 <tr>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã thiết bị</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Tên thiết bị</th>
-                                    <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Giá nhập</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Giá thành</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã NSX</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã Loại</th>
-                                    <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Ảnh sản phẩm</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã nhà cung cấp</th>
-                                    <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Số lượng</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Thông số</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Điều chỉnh</th>
                                 </tr>
@@ -46,14 +43,7 @@ const products = ref([
                                         product.price
                                     }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
-                                        product.year }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
-                                        product.type }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
                                         product.quantity }}</td>
-                                    <td><img class="w-[125px] py-2" :src="product.image" alt="Product Image" /></td>
                                     <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
                                         product.author
                                     }}</td>
