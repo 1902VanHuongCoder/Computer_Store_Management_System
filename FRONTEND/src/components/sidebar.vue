@@ -6,31 +6,32 @@ const sidebarMenu = [
         path: "/",
     },
     {
-        name: "Danh sách người dùng",
-        icon: "fa-solid fa-users",
-        path: "/customers",
-    },
-    {
         name: "Thêm sản phẩm",
         icon: "fa-solid fa-cart-plus",
         path: "addProduct",
     },
+    { name: "Thêm nhân viên", icon: "fa-solid fa-user-plus", path: "addAdmin" },
     {
-        name: "Thêm loại thiết bị",
+        name: "Quản lý loại thiết bị",
         icon: "fa-solid fa-tags",
         path: "typeDevice",
     },
     {
-        name: "Thêm nhà cung cấp",
+        name: "Quản lý nhà cung cấp",
         icon: "fa-solid fa-user-tie",
         path: "suppliers",
     },
     {
-        name: "Thêm nhà sản xuất",
+        name: "Quản lý nhà sản xuất",
         icon: "fa-solid fa-user-group",
         path: "manufacturers",
     },
-    { name: "Thêm nhân viên", icon: "fa-solid fa-user-plus", path: "addAdmin" },
+    { name: "Quản lý nhân viên", icon: "fa-solid fa-users", path: "staffList" },
+        {
+        name: "Quản lý khách hàng",
+        icon: "fa-solid fa-user-group",
+        path: "/customers",
+    },
     {
         name: "Thông tin phiếu nhập",
         icon: "fa-solid fa-rectangle-list",
@@ -54,7 +55,7 @@ const sidebarMenu = [
         </div>
         <hr class="bg-blue-primary h-[2px]" />
         <h2 class="font-semibold text-gray-400 text-lg uppercase">Computer Store Manager</h2>
-        <ul class="flex flex-col gap-3">
+        <ul class="flex flex-col gap-2">
             <router-link :to="item.path" v-for="item in sidebarMenu" :key="item" active-class="active-link"
                 class="flex gap-3 text-[16px] items-center font-semibold text-gray-700 cursor-pointer px-2 py-3 shadow-none hover:bg-blue-primary hover:text-white rounded-lg transition-all duration-200 hover:shadow-xl">
                 <i :class="item.icon"></i>

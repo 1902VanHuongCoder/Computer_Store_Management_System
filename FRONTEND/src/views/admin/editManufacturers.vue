@@ -7,7 +7,6 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const manufacturers = ref([]);
 const idManufacturers = ref("");
 const nameManufacturers = ref("");
 const country = ref("");

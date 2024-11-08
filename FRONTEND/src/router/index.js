@@ -17,7 +17,8 @@ import EditSuppliers from "../views/admin/editSuppliers.vue";
 import Manufacturers from "../views/admin/manufacturers.vue";
 import EditManufacturers from "../views/admin/editManufacturers.vue";
 import TypeDevice from "../views/admin/typeDevice.vue";
-import EditTypeDevice from "../views/admin/editTypeDevice.vue"
+import EditTypeDevice from "../views/admin/editTypeDevice.vue";
+import EditCustomers from "../views/admin/editCustomers.vue";
 
 const routes = [
   {
@@ -79,6 +80,11 @@ const routes = [
     path: "/customers",
     name: "Customers",
     component: Customers,
+  },
+  {
+    path: "/editCustomer/:maKH",
+    name: "Edit Customers",
+    component: EditCustomers,
   },
   {
     path: "/suppliers",

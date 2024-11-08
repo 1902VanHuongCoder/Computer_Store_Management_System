@@ -8,31 +8,32 @@ const sidebarMobile = [
         path: "/",
     },
     {
-        name: "Danh sách người dùng",
-        icon: "fa-solid fa-users",
-        path: "/customers",
-    },
-    {
         name: "Thêm sản phẩm",
         icon: "fa-solid fa-cart-plus",
         path: "addProduct",
     },
+    { name: "Thêm nhân viên", icon: "fa-solid fa-user-plus", path: "addAdmin" },
     {
-        name: "Thêm loại thiết bị",
+        name: "Quản lý loại thiết bị",
         icon: "fa-solid fa-tags",
-        path: "addTypeDevice",
+        path: "typeDevice",
     },
     {
-        name: "Thêm nhà cung cấp",
+        name: "Quản lý nhà cung cấp",
         icon: "fa-solid fa-user-tie",
         path: "suppliers",
     },
     {
-        name: "Thêm nhà sản xuất",
+        name: "Quản lý nhà sản xuất",
         icon: "fa-solid fa-user-group",
         path: "manufacturers",
     },
-    { name: "Thêm nhân viên", icon: "fa-solid fa-user-plus", path: "addAdmin" },
+    { name: "Quản lý nhân viên", icon: "fa-solid fa-users", path: "staffList" },
+        {
+        name: "Quản lý khách hàng",
+        icon: "fa-solid fa-group",
+        path: "/customers",
+    },
     {
         name: "Thông tin phiếu nhập",
         icon: "fa-solid fa-rectangle-list",
