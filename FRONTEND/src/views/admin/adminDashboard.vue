@@ -15,7 +15,7 @@ const products = ref([
             <sidebar />
             <div class="flex flex-col gap-5 w-full p-3 overflow-auto">
                 <navbar />
-                <div class="h-full bg-white rounded-xl">
+                <div class="bg-white rounded-xl">
                     <div class="text-center py-4 block lg:hidden">
                         <h2 class="font-bold text-blue-primary text-[18px]">DANH SÁCH SẢN PHẨM</h2>
                     </div>

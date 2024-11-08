@@ -19,6 +19,7 @@ import EditManufacturers from "../views/admin/editManufacturers.vue";
 import TypeDevice from "../views/admin/typeDevice.vue";
 import EditTypeDevice from "../views/admin/editTypeDevice.vue";
 import EditCustomers from "../views/admin/editCustomers.vue";
+import StaffList from "../views/admin/staffList.vue";
 
 const routes = [
   {
@@ -30,6 +31,11 @@ const routes = [
     path: "/addAdmin",
     name: "Add Admin",
     component: AddAdmin,
+  },
+  {
+    path: "/staffList",
+    name: "Staff List",
+    component: StaffList
   },
   {
     path: "/",

@@ -9,7 +9,7 @@
                     </div>
                     <div class="w-full md:w-1/2 p-8 md:p-12">
                         <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 mb-2">
-                            Đăng ký
+                            THÊM NHÂN VIÊN
                         </h1>
                         <p class="text-md md:text-lg font-medium text-center text-gray-600 mb-8">
                             Vui lòng điền thông tin để đăng ký!
@@ -32,6 +32,22 @@
                                     class="w-full px-4 py-3 rounded-lg outline-none border-2 border-gray-300 focus:border-blue-secondary focus:ring-blue-secondary transition duration-150 ease-in-out"
                                     placeholder="0123456789" />
                             </div>
+                            <div>
+                                <label for="ChucVu"
+                                    class="text-sm font-medium text-gray-700 block mb-2">Chức vụ</label>
+                                <select id="ChucVu"
+                                    class="w-full px-4 py-3 cursor-pointer rounded-lg outline-none border-2 border-gray-300 focus:border-blue-secondary focus:ring-blue-secondary transition duration-150 ease-in-out">
+                                    <option value="">Chọn chức vụ phù hợp</option>
+                                    <option value="Quản trị viên">Quản trị viên</option>
+                                    <option value="Nhân viên">Nhân viên</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="MatKhau" class="text-sm font-medium text-gray-700 block mb-2">Mật khẩu</label>
+                                <input type="text" id="MatKhau" v-model="MatKhau"
+                                    class="w-full px-4 py-3 rounded-lg outline-none border-2 border-gray-300 focus:border-blue-secondary focus:ring-blue-secondary transition duration-150 ease-in-out"
+                                    placeholder="••••••••" />
+                            </div>
                             <button type="submit"
                                 class="w-full bg-blue-secondary text-white py-3 rounded-lg font-medium hover:bg-blue-dark transition duration-150 ease-in-out">
                                 Đăng ký
@@ -44,50 +60,43 @@
     </div>
 </template>
 
-<script>
-export default {
-    data() {
-        return {
-            HoTen: '',
-            NgaySinh: '',
-            SoDienThoai: ''
-        };
-    },
-    methods: {
-        async register() {
-            const newNhanVien = {
-                HoTen: this.HoTen,
-                NgaySinh: this.NgaySinh,
-                SoDienThoai: this.SoDienThoai
-            };
+<script setup>
+import { ref } from 'vue';
 
-            try {
-                const response = await fetch('http://localhost:3000/api/nhanvien', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(newNhanVien)
-                });
+const HoTen = ref('');
+const NgaySinh = ref('');
+const SoDienThoai = ref('');
 
-                if (response.ok) {
-                    alert('Đăng ký thành công!');
-                    // Reset form fields
-                    this.HoTen = '';
-                    this.NgaySinh = '';
-                    this.SoDienThoai = '';
-                } else {
-                    alert('Đăng ký thất bại!');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Đã xảy ra lỗi!');
-            }
+const register = async () => {
+    const newNhanVien = {
+        HoTen: HoTen.value,
+        NgaySinh: NgaySinh.value,
+        SoDienThoai: SoDienThoai.value
+    };
+
+    try {
+        const response = await fetch('http://localhost:3000/api/nhanvien', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newNhanVien)
+        });
+
+        if (response.ok) {
+            alert('Đăng ký thành công!');
+            HoTen.value = '';
+            NgaySinh.value = '';
+            SoDienThoai.value = '';
+        } else {
+            alert('Đăng ký thất bại!');
         }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Đã xảy ra lỗi!');
     }
 };
 </script>
 
 <style scoped>
-/* Add your styles here */
 </style>
