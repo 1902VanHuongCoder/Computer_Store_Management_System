@@ -49,12 +49,6 @@ CREATE TABLE NhanVien (
 	SoDienThoai VARCHAR(20) -- Số điện thoại
 );
 
-
-
-
-
-
-
 CREATE TABLE PhieuNhap (
 	MaPN INT PRIMARY KEY, -- Mã phiếu nhập
 	MaNhanVien INT, -- Khóa ngoại đến bảng NhanVien
@@ -105,7 +99,6 @@ CREATE TABLE ChiTietPhieuXuat (
 );
 
 -- NHÀ SẢN XUẤT ------------------------------
-
 -- 2. Tạo Trigger để kiểm tra dữ liệu trước khi thêm mới nhà sản xuất
 DELIMITER //
 CREATE TRIGGER BeforeInsertNhaSanXuat
@@ -124,7 +117,7 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
-DROP TRIGGER IF EXISTS BeforeInsertNhaSanXuat;
+
 -- 3. Tạo Stored Procedure để lấy tất cả nhà sản xuất
 DELIMITER //
 CREATE PROCEDURE GetAllNhaSanXuat()
@@ -245,7 +238,6 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
-
 
 -- NHÀ CUNG CẤP ------------------------------
 -- 1. Tạo Trigger để kiểm tra dữ liệu trước khi thêm mới nhà cung cấp
@@ -505,23 +497,11 @@ CREATE PROCEDURE DeleteLoaiThietBi(
     IN p_MaLoai INT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
-        ROLLBACK;
-    END;
-
-    -- Bắt đầu transaction
-    START TRANSACTION;
-
     -- Xóa loại thiết bị dựa vào MaLoai
     DELETE FROM LoaiThietBi WHERE MaLoai = p_MaLoai;
-
-    -- Commit transaction nếu mọi thứ thành công
-    COMMIT;
 END //
 DELIMITER ;
-
+DROP PROCEDURE IF EXISTS DeleteLoaiThietBi;
 -- 6. Chỉnh sửa loại thiết bị
 DELIMITER //
 CREATE PROCEDURE UpdateLoaiThietBi(
@@ -906,3 +886,185 @@ END //
 DELIMITER ;
 
 DROP TRIGGER IF EXISTS BeforeUpdateNhanVien;
+
+-- THIẾT BỊ ------------------------------
+-- 1. Kiểm tra trước khi thêm thiết bị
+DELIMITER //
+CREATE TRIGGER BeforeInsertThietBi
+BEFORE INSERT ON ThietBi
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên thiết bị không được để trống
+    IF NEW.TenThietBi IS NULL OR NEW.TenThietBi = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Tên thiết bị không được để trống';
+    END IF;
+
+ -- Kiểm tra tên thiết bị không được để trống
+    IF NEW.GiaThanh IS NULL OR NEW.GiaThanh = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Giá thành không được để trống';
+    END IF;
+    -- Kiểm tra giá thành không được âm
+    IF NEW.GiaThanh < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Giá thành không được âm';
+    END IF;
+
+    -- Kiểm tra thông số kỹ thuật không được để trống
+    IF NEW.ThongSoKT IS NULL OR NEW.ThongSoKT = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Thông số kỹ thuật không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhà sản xuất có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhaSanXuat WHERE MaNSX = NEW.MaNSX) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà sản xuất không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã loại thiết bị có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM LoaiThietBi WHERE MaLoai = NEW.MaLoai) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã loại thiết bị không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã nhà cung cấp có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhaCungCap WHERE MaNhaCungCap = NEW.MaNhaCungCap) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà cung cấp không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+-- 2. Lấy tất cả thiết bị
+DELIMITER //
+CREATE PROCEDURE GetAllThietBi()
+BEGIN
+    SELECT * FROM ThietBi;
+END //
+DELIMITER ;
+
+-- 3. Lấy thiết bị theo mã
+DELIMITER //
+CREATE PROCEDURE GetThietBiById(IN p_MaThietBi VARCHAR(255))
+BEGIN
+    SELECT * FROM ThietBi WHERE MaThietBi = p_MaThietBi;
+END //
+DELIMITER ;
+
+-- Kiểm tra trước khi cập nhật thiết bị
+DELIMITER //
+CREATE TRIGGER BeforeUpdateThietBi
+BEFORE UPDATE ON ThietBi
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên thiết bị không được để trống khi cập nhật
+    IF NEW.TenThietBi IS NULL OR NEW.TenThietBi = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Tên thiết bị không được để trống';
+    END IF;
+
+    -- Kiểm tra tên thiết bị không được để trống
+    IF NEW.GiaThanh IS NULL OR NEW.GiaThanh = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Giá thành không được để trống';
+    END IF;
+    -- Kiểm tra giá thành không được âm
+    IF NEW.GiaThanh < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Giá thành không được âm';
+    END IF;
+
+    -- Kiểm tra thông số kỹ thuật không được để trống
+    IF NEW.ThongSoKT IS NULL OR NEW.ThongSoKT = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Thông số kỹ thuật không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhà sản xuất có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhaSanXuat WHERE MaNSX = NEW.MaNSX) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà sản xuất không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã loại thiết bị có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM LoaiThietBi WHERE MaLoai = NEW.MaLoai) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã loại thiết bị không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã nhà cung cấp có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhaCungCap WHERE MaNhaCungCap = NEW.MaNhaCungCap) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà cung cấp không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+-- 4. Thêm thiết bị
+DELIMITER //
+CREATE PROCEDURE AddThietBi(
+    IN p_MaThietBi VARCHAR(255),
+    IN p_TenThietBi VARCHAR(255),
+    IN p_MaNSX INT,
+    IN p_ThongSoKT TEXT,
+    IN p_MaLoai INT,
+    IN p_GiaThanh INT,
+    IN p_MaNhaCungCap INT
+)
+BEGIN
+    INSERT INTO ThietBi (MaThietBi, TenThietBi, MaNSX, ThongSoKT, MaLoai, GiaThanh, MaNhaCungCap) 
+    VALUES (p_MaThietBi, p_TenThietBi, p_MaNSX, p_ThongSoKT, p_MaLoai, p_GiaThanh, p_MaNhaCungCap);
+END //
+DELIMITER ;
+
+-- 5. Cập nhật thiết bị
+DELIMITER //
+CREATE PROCEDURE UpdateThietBi(
+    IN p_MaThietBi VARCHAR(255),
+    IN p_TenThietBi VARCHAR(255),
+    IN p_MaNSX INT,
+    IN p_ThongSoKT TEXT,
+    IN p_MaLoai INT,
+    IN p_GiaThanh INT,
+    IN p_MaNhaCungCap INT
+)
+BEGIN
+    UPDATE ThietBi
+    SET TenThietBi = p_TenThietBi, MaNSX = p_MaNSX, ThongSoKT = p_ThongSoKT, 
+        MaLoai = p_MaLoai, GiaThanh = p_GiaThanh, MaNhaCungCap = p_MaNhaCungCap
+    WHERE MaThietBi = p_MaThietBi;
+END //
+DELIMITER ;
+
+-- 6. Kiểm tra trước khi xóa thiết bị
+DELIMITER //
+CREATE TRIGGER BeforeDeleteThietBi
+BEFORE DELETE ON ThietBi
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem thiết bị có tồn tại trong bảng ChiTietPhieuNhap không
+    IF EXISTS (SELECT 1 FROM ChiTietPhieuNhap WHERE MaThietBi = OLD.MaThietBi) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa thiết bị này vì đã có chi tiết phiếu nhập liên quan';
+    END IF;
+
+    -- Kiểm tra xem thiết bị có tồn tại trong bảng ChiTietPhieuXuat không
+    IF EXISTS (SELECT 1 FROM ChiTietPhieuXuat WHERE MaThietBi = OLD.MaThietBi) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa thiết bị này vì đã có chi tiết phiếu xuất liên quan';
+    END IF;
+END //
+DELIMITER ;
+
+-- 7. Xóa thiết bị
+DELIMITER //
+CREATE PROCEDURE DeleteThietBi(
+    IN p_MaThietBi VARCHAR(255)
+)
+BEGIN
+    DELETE FROM ThietBi WHERE MaThietBi = p_MaThietBi;
+END //
+DELIMITER ;
+DROP PROCEDURE IF EXISTS DeleteThietBi;

@@ -56,10 +56,7 @@ module.exports = {
     const { MaLoaiThietBi } = req.params;
     LoaiThietBi.delete(MaLoaiThietBi, (err, result) => {
       if (err) {
-        if (err.sqlMessage) {
-          return res.status(400).json({ error: err.sqlMessage });
-        }
-        return res.status(500).json({ error: "Lỗi khi xóa loại thiết bị" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Xóa loại thiết bị thành công", result });
     });

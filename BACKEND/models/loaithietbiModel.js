@@ -49,6 +49,7 @@ const LoaiThietBi = {
     db.query(sql, [MaLoaiThietBi], (err, results) => {
       if (err) {
         if (err.code === "45000") {
+          console.error(err.sqlMessage)
           return callback(new Error(err.sqlMessage));
         }
         return callback(err);
