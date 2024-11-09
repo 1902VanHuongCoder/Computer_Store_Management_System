@@ -60,7 +60,7 @@ const deleteManufacturers = async (maNSX) => {
         showMessage('Nhà sản xuất đã được xóa thành công!', 'success');
         await getManufacturers();
     } catch(error) {
-        showMessage(error, 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 }
 

@@ -54,7 +54,7 @@ const routes = [
     component: AddProduct,
   },
   {
-    path: "/editProduct",
+    path: "/editProduct/:maTB",
     name: "Edit Product",
     component: EditProduct,
   },

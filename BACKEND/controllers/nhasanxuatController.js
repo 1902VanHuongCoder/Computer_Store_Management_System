@@ -52,10 +52,7 @@ module.exports = {
     const { MaNSX } = req.params;
     NhaSanXuat.delete(MaNSX, (err, result) => {
       if (err) {
-        if (err.sqlMessage) {
-          return res.status(400).json({ error: err.sqlMessage });
-        }
-        return res.status(500).json({ error: "Lỗi khi xóa nhà sản xuất" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Xóa nhà sản xuất thành công", result });
     });

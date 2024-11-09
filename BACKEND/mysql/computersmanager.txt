@@ -104,7 +104,7 @@ CREATE TABLE ChiTietPhieuXuat (
 	FOREIGN KEY (MaThietBi) REFERENCES ThietBi(MaThietBi) -- Khóa ngoại đến bảng ThietBi
 );
 
--- NHÀ XUẤT BẢN ------------------------------
+-- NHÀ SẢN XUẤT ------------------------------
 
 -- 2. Tạo Trigger để kiểm tra dữ liệu trước khi thêm mới nhà sản xuất
 DELIMITER //
@@ -165,6 +165,21 @@ BEGIN
     -- Commit transaction nếu mọi thứ thành công
     COMMIT;
 END //
+DELIMITER ;
+-- Kiểm tra khi xóa
+DELIMITER //
+
+CREATE TRIGGER BeforeDeleteNhaSanXuat
+BEFORE DELETE ON NhaSanXuat
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem nhà sản xuất có tồn tại trong bảng ThietBi không
+    IF EXISTS (SELECT 1 FROM ThietBi WHERE MaNSX = OLD.MaNSX) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa nhà sản xuất này vì đã có thiết bị liên quan';
+    END IF;
+END //
+
 DELIMITER ;
 
 -- 6. Tạo Stored Procedure để xóa nhà sản xuất theo mã (MaNSX)
@@ -307,6 +322,27 @@ BEGIN
     COMMIT;
 END //
 DELIMITER ;
+-- Kiểm tra trước khi xóa
+DELIMITER //
+
+CREATE TRIGGER BeforeDeleteNhaCungCap
+BEFORE DELETE ON NhaCungCap
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem nhà cung cấp có đang được tham chiếu trong bảng ThietBi không
+    IF EXISTS (SELECT 1 FROM ThietBi WHERE MaNhaCungCap = OLD.MaNhaCungCap) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa nhà cung cấp này vì đã có thiết bị liên quan';
+    END IF;
+
+    -- Kiểm tra xem nhà cung cấp có tồn tại trong bảng PhieuNhap không
+    IF EXISTS (SELECT 1 FROM PhieuNhap WHERE MaNhaCungCap = OLD.MaNhaCungCap) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa nhà cung cấp này vì đã có phiếu nhập liên quan';
+    END IF;
+END //
+
+DELIMITER ;
 
 -- 5. Tạo Stored Procedure để xóa nhà cung cấp theo mã (MaNhaCungCap)
 DELIMITER //
@@ -447,6 +483,22 @@ BEGIN
 END //
 DELIMITER ;
 
+-- Kiểm tra trước khi xóa
+DELIMITER //
+
+CREATE TRIGGER BeforeDeleteLoaiThietBi
+BEFORE DELETE ON LoaiThietBi
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem loại thiết bị có tồn tại trong bảng ThietBi không
+    IF EXISTS (SELECT 1 FROM ThietBi WHERE MaLoai = OLD.MaLoai) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa loại thiết bị này vì đã có thiết bị liên quan';
+    END IF;
+END //
+
+DELIMITER ;
+
 -- 5. Xóa loại thiết bị
 DELIMITER //
 CREATE PROCEDURE DeleteLoaiThietBi(
@@ -580,6 +632,21 @@ BEGIN
     INSERT INTO KhachHang (TenKhachHang, DiaChi, SoDienThoai) 
     VALUES (p_TenKhachHang, p_DiaChi, p_SoDienThoai);
 END //
+DELIMITER ;
+-- Kiểm tra trước khi xóa
+DELIMITER //
+
+CREATE TRIGGER BeforeDeleteKhachHang
+BEFORE DELETE ON KhachHang
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem khách hàng có tồn tại trong bảng PhieuXuat không
+    IF EXISTS (SELECT 1 FROM PhieuXuat WHERE MaKhachHang = OLD.MaKhachHang) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa khách hàng này vì đã có phiếu xuất liên quan';
+    END IF;
+END //
+
 DELIMITER ;
 
 -- 5. Xóa khách hàng ---------------
@@ -759,7 +826,31 @@ BEGIN
 END //
 DELIMITER ;
 
--- 6. Xóa
+-- 6. Kiểm tra trước khi xóa
+DELIMITER //
+
+CREATE TRIGGER BeforeDeleteNhanVien
+BEFORE DELETE ON NhanVien
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem nhân viên có tồn tại trong bảng PhieuNhap không
+    IF EXISTS (SELECT 1 FROM PhieuNhap WHERE MaNhanVien = OLD.MaNhanVien) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa nhân viên này vì đã tồn tại trong Phiếu Nhập';
+    END IF;
+
+    -- Kiểm tra xem nhân viên có tồn tại trong bảng PhieuXuat không
+    IF EXISTS (SELECT 1 FROM PhieuXuat WHERE MaNhanVien = OLD.MaNhanVien) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa nhân viên này vì đã tồn tại trong Phiếu Xuất';
+    END IF;
+
+    -- Có thể thêm kiểm tra các bảng khác nếu cần
+END //
+
+DELIMITER ;
+
+-- 7. Xóa
 DELIMITER //
 CREATE PROCEDURE DeleteNhanVien(
     IN p_MaNhanVien VARCHAR(255)
@@ -769,7 +860,7 @@ BEGIN
 END //
 DELIMITER ;
 
--- 7. Kiểm tra
+-- 8. Kiểm tra
 DELIMITER //
 
 CREATE TRIGGER BeforeUpdateNhanVien

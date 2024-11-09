@@ -41,13 +41,10 @@ const NhaSanXuat = {
 
   // Xóa nhà sản xuất
   delete: (MaNSX, callback) => {
-    const sql = "CALL DeleteNhaSanXuat(?)"; // Gọi stored procedure DeleteNhaSanXuat
+    const sql = "CALL DeleteNhaSanXuat(?)";
     db.query(sql, [MaNSX], (err, results) => {
       if (err) {
-        if (err.code === "45000") {
-          return callback(new Error(err.sqlMessage));
-        }
-        return callback(err);
+        return callback(new Error(err.sqlMessage));
       }
       callback(null, results);
     });

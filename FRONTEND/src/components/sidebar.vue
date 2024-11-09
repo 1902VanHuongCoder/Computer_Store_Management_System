@@ -1,7 +1,7 @@
 <script setup>
 const sidebarMenu = [
     {
-        name: "Danh sách sản phẩm",
+        name: "Danh sách thiết bị",
         icon: "fa-solid fa-igloo",
         path: "/",
     },

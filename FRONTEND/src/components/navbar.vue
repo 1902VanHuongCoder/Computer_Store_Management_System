@@ -3,7 +3,7 @@ import { onMounted } from 'vue';
 
 const sidebarMobile = [
     {
-        name: "Danh sách sản phẩm",
+        name: "Danh sách thiết bị",
         icon: "fa-solid fa-igloo",
         path: "/",
     },
