@@ -56,7 +56,7 @@ const deleteTypeDevice = async (maLoaiThietBi) => {
         showMessage('Loại thiết bị đã được xóa thành công!', 'success');
         await getTypeDevices();
     } catch (error) {
-        showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 }
 
