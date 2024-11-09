@@ -20,6 +20,7 @@ import TypeDevice from "../views/admin/typeDevice.vue";
 import EditTypeDevice from "../views/admin/editTypeDevice.vue";
 import EditCustomers from "../views/admin/editCustomers.vue";
 import StaffList from "../views/admin/staffList.vue";
+import EditStaffInfo from "@/views/admin/editStaffInfo.vue";
 
 const routes = [
   {
@@ -36,6 +37,11 @@ const routes = [
     path: "/staffList",
     name: "Staff List",
     component: StaffList
+  },
+  {
+    path: "/editStaff/:maNV",
+    name: "Edit Staff List",
+    component: EditStaffInfo
   },
   {
     path: "/",

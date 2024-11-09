@@ -12,7 +12,7 @@ import sidebar from '@/components/sidebar.vue';
                 <navbar />
                 <div class="h-full overflow-hidden">
                     <div class="text-center py-4">
-                        <h2 class="font-bold text-blue-primary text-[22px]">THÊM THIẾT BỊ</h2>
+                        <h2 class="font-bold text-blue-primary text-[20px]">THÊM THIẾT BỊ</h2>
                     </div>
                     <form action="/admin/addproduct" method="POST" enctype="multipart/form-data" id="all_products"
                         class="w-full max-h-[calc(100vh-200px)] overflow-y-auto">

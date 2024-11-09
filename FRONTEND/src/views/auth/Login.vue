@@ -29,7 +29,7 @@
                         </form>
                     </div>
                     <div class="hidden md:block w-1/2 bg-blue-secondary p-12">
-                        <img src="../assets/img/img-login.png" class="w-[500px] h-full object-cover rounded-xl"
+                        <img src="../../assets/img/img-login.png" class="w-[500px] h-full object-cover rounded-xl"
                             alt="Login illustration">
                     </div>
                 </div>

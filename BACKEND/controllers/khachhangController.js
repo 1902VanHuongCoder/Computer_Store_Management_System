@@ -48,8 +48,8 @@ module.exports = {
 
     // Xóa khách hàng
     deleteKhachHang: (req, res) => {
-        const { MaKhachHang } = req.params;
-        KhachHang.delete(MaKhachHang, (err, result) => {
+        const { MaKH } = req.params;
+        KhachHang.delete(MaKH, (err, result) => {
             if (err) {
                 return res.status(500).json({ error: 'Lỗi khi xóa khách hàng' });
             }
