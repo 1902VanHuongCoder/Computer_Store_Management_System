@@ -6,12 +6,12 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
-const idStaff= ref("");
+const idStaff = ref("");
 const nameStaff = ref("");
 const poision = ref("");
 const phoneStaff = ref("");
 const dateStaff = ref("");
-const password = ref(""); 
+const password = ref("");
 const confirmPassword = ref("");
 const notification = ref({
     message: "",
@@ -32,27 +32,47 @@ const getStaffByID = async (id) => {
         const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
         dateStaff.value = localDate.toISOString().slice(0, 10);
         poision.value = response.data[0].ChucVu;
-        
+
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu:', error);
     }
 };
 
-const editSuppliers = async () => {
+const editStaffInfo = async () => {
+    if (password.value !== "" && password.value !== confirmPassword.value) {
+        showMessage('Mật khẩu và xác nhận mật khẩu không trùng khớp!', 'error');
+        return;
+    }
+
+    if (!nameStaff.value.trim() || !dateStaff.value.trim() || !phoneStaff.value.trim() || !poision.value.trim()) {
+        return showMessage('Vui lòng nhập đầy đủ thông tin!', 'error');
+    }
+
+    const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    if (!phonePattern.test(phoneStaff.value.trim())) {
+        return showMessage('Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại hợp lệ.', 'error');
+    }
+
     try {
-        const updateSuppliers = {
-            MaNhaCungCap: idSuppliers.value,
-            TenNhaCungCap: nameSuppliers.value,
-            SoDienThoai: phoneSuppliers.value,
-            DiaChi: addressSuppliers.value,
+        const updateStaffInfo = {
+            MaNhanVien: idStaff.value,
+            HoTen: nameStaff.value,
+            SoDienThoai: phoneStaff.value,
+            NgaySinh: dateStaff.value,
+            ChucVu: poision.value,
         };
-        const response = await axios.put(`http://localhost:3000/api/nhanvien/${idSuppliers.value}`, updateSuppliers);
-        showMessage('Nhà cung cấp đã chỉnh sửa thành công!', 'success');
+
+        // Chỉ thêm trường mật khẩu nếu người dùng nhập mật khẩu mới
+        if (password.value !== "") {
+            updateStaffInfo.MatKhau = password.value;
+        }
+        const response = await axios.put(`http://localhost:3000/api/nhanvien/${idStaff.value}`, updateStaffInfo);
+        showMessage('Cập nhật thông tin nhân viên thành công!', 'success');
 
         setTimeout(() => {
-            router.push('/suppliers');
+            router.push('/staffList');
         }, 2000);
-    } catch(error) {
+    } catch (error) {
         showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 }
@@ -63,7 +83,7 @@ onMounted(() => {
     console.log(idNV);
     getStaffByID(idNV);
 });
-    
+
 </script>
 
 <template>
@@ -108,15 +128,14 @@ onMounted(() => {
                                                 <div class="md:col-span-5">
                                                     <label for="phoneStaff" class="font-semibold text-[16px]">Số điện
                                                         thoại</label>
-                                                    <input type="text" name="phoneStaff" id="phoneStaff"
+                                                    <input type="text" readonly name="phoneStaff" id="phoneStaff"
                                                         v-model="phoneStaff"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập số điện thoại ...">
                                                 </div>
 
                                                 <div class="md:col-span-5">
-                                                    <label for="position"
-                                                        class="font-semibold text-[16px]">Chức
+                                                    <label for="position" class="font-semibold text-[16px]">Chức
                                                         vụ</label>
                                                     <select id="position" v-model="poision"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50">
@@ -127,7 +146,8 @@ onMounted(() => {
                                                 </div>
 
                                                 <div class="md:col-span-5">
-                                                    <label for="password" class="font-semibold text-[16px]">Mật khẩu</label>
+                                                    <label for="password" class="font-semibold text-[16px]">Mật
+                                                        khẩu</label>
                                                     <input type="password" name="password" id="password"
                                                         v-model="password"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
@@ -135,7 +155,8 @@ onMounted(() => {
                                                 </div>
 
                                                 <div class="md:col-span-5">
-                                                    <label for="confirmPassword" class="font-semibold text-[16px]">Nhập lại mật khẩu</label>
+                                                    <label for="confirmPassword" class="font-semibold text-[16px]">Nhập
+                                                        lại mật khẩu</label>
                                                     <input type="password" name="confirmPassword" id="confirmPassword"
                                                         v-model="confirmPassword"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
@@ -156,6 +177,13 @@ onMounted(() => {
                             </div>
                         </div>
                     </div>
+                    <transition name="slide-fade" mode="out-in">
+                        <div v-if="notification.message"
+                            :class="`fixed top-4 right-4 p-5 bg-white shadow-lg rounded-lg z-10 flex items-center space-x-2 
+                        ${notification.type === 'success' ? 'border-l-8 border-blue-primary text-blue-primary' : 'border-l-8 border-red-500 text-red-600'}`">
+                            <p class="text-[18px] font-semibold">{{ notification.message }}</p>
+                        </div>
+                    </transition>
                 </div>
             </div>
         </div>

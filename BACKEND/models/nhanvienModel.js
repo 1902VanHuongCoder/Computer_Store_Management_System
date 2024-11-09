@@ -35,32 +35,47 @@ const NhanVien = {
     const MaNhanVien = randomMaNhanVien();
     const { HoTen, NgaySinh, SoDienThoai, ChucVu, MatKhau } = data;
     NhanVien.checkPhoneNumberExists(SoDienThoai, async (err, exists) => {
-        if (err) return callback(err);
-        if (exists) {
-            return callback(new Error("Số điện thoại này đã tồn tại"));
+      if (err) return callback(err);
+      if (exists) {
+        return callback(new Error("Số điện thoại này đã tồn tại"));
+      }
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(MatKhau, salt);
+
+      const sql = "CALL AddNhanVien(?, ?, ?, ?, ?, ?)";
+      db.query(
+        sql,
+        [MaNhanVien, HoTen, NgaySinh, SoDienThoai, ChucVu, hashedPassword],
+        (err, results) => {
+          if (err) return callback(err);
+          callback(null, results);
         }
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(MatKhau, salt);
-
-        const sql = "CALL AddNhanVien(?, ?, ?, ?, ?, ?)";
-        db.query(
-            sql,
-            [MaNhanVien, HoTen, NgaySinh, SoDienThoai, ChucVu, hashedPassword],
-            (err, results) => {
-                if (err) return callback(err);
-                callback(null, results);
-            }
-        );
+      );
     });
-},
+  },
 
-  update: (MaNV, data, callback) => {
-    const { TenKhachHang, NgaySinh, SoDienThoai } = data;
-    const sql = "CALL UpdateNhanVien(?, ?, ?, ?)";
+  update: async (MaNV, data, callback) => {
+    const { HoTen, NgaySinh, SoDienThoai, ChucVu, MatKhau } = data;
+    if (MatKhau) {
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(MatKhau, salt);
+    } else {
+      // Lấy mật khẩu hiện tại từ cơ sở dữ liệu
+      const existingEmployee = await new Promise((resolve, reject) => {
+        const sql = "SELECT MatKhau FROM NhanVien WHERE MaNhanVien = ?";
+        db.query(sql, [MaNV], (err, results) => {
+          if (err) return reject(err);
+          resolve(results[0]);
+        });
+      });
+      hashedPassword = existingEmployee ? existingEmployee.MatKhau : null; // Lưu mật khẩu cũ
+    }
+
+    const sql = "CALL UpdateNhanVien(?, ?, ?, ?, ?, ?)";
     db.query(
       sql,
-      [MaNV, TenKhachHang, NgaySinh, SoDienThoai],
+      [MaNV, HoTen, NgaySinh, SoDienThoai, ChucVu, hashedPassword || MatKhau], // Sử dụng mật khẩu cũ nếu hashedPassword là null
       (err, results) => {
         if (err) return callback(err);
         callback(null, results);
@@ -71,7 +86,12 @@ const NhanVien = {
   delete: (MaNV, callback) => {
     const sql = "CALL DeleteNhanVien(?)";
     db.query(sql, [MaNV], (err, results) => {
-      if (err) return callback(err);
+      if (err) {
+        if (err.code === '45000') {
+          return callback(new Error(err.sqlMessage));
+        }
+        return callback(err);
+      }
       callback(null, results);
     });
   },

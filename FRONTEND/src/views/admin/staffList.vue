@@ -28,16 +28,16 @@ const getStaffs = async () => {
     }
 };
 
-const deleteTypeDevice = async (maLoaiThietBi) => {
-    const confirmDelete = confirm("Bạn có chắc chắn muốn xóa loại thiết bị này không?");
+const deleteStaff = async (maNhanVien) => {
+    const confirmDelete = confirm("Bạn có chắc chắn muốn xóa nhân viên này không?");
     if (!confirmDelete) return;
     try {
-        const response = await axios.delete(`http://localhost:3000/api/loaithietbi/${maLoaiThietBi}`);
-        typeDevices.value = typeDevices.value.filter(typeDevice => typeDevice.MaLoai !== maLoaiThietBi);
-        showMessage('Loại thiết bị đã được xóa thành công!', 'success');
-        await getTypeDevices();
+        const response = await axios.delete(`http://localhost:3000/api/nhanvien/${maNhanVien}`);
+        staffs.value = staffs.value.filter(staff => staff.MaNhanVien !== maNhanVien);
+        showMessage('Nhân viên đã được xóa thành công!', 'success');
+        await getStaffs();
     } catch (error) {
-        showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 }
 
@@ -65,11 +65,12 @@ onMounted(() => {
                     <h2 class="font-bold text-blue-primary text-[20px]">DANH SÁCH NHÂN VIÊN</h2>
                 </div>
                 <div class="relative flex justify-center gap-4 max-w-xl">
-                        <input type="text" v-model="searchQuery"
-                            class="items-center w-full p-3 bg-white border-2 border-gray-400 text-[14px] font-semibold tracking-wider text-black rounded-lg focus:outline-none"
-                            placeholder="Tìm kiếm nhân viên ..." />
-                        <i class="fa-solid fa-magnifying-glass absolute top-3 right-4 font-bold text-[25px] text-blue-primary"></i>
-                    </div>
+                    <input type="text" v-model="searchQuery"
+                        class="items-center w-full p-3 bg-white border-2 border-gray-400 text-[14px] font-semibold tracking-wider text-black rounded-lg focus:outline-none"
+                        placeholder="Tìm kiếm nhân viên ..." />
+                    <i
+                        class="fa-solid fa-magnifying-glass absolute top-3 right-4 font-bold text-[25px] text-blue-primary"></i>
+                </div>
                 <div class="bg-white rounded-xl">
                     <div id="all_products" class="overflow-auto">
                         <table class="w-full border-collapse whitespace-nowrap text-center text-sm text-gray-500">
@@ -100,7 +101,7 @@ onMounted(() => {
                                         <a :href="`/editStaff/${staff.MaNhanVien}`"
                                             class="inline-block bg-blue-primary text-white font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Sửa
                                             nhân viên</a>
-                                        <form @submit.prevent="">
+                                        <form @submit.prevent="deleteStaff(staff.MaNhanVien)">
                                             <button type="submit"
                                                 class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa
                                                 nhân viên</button>
@@ -111,9 +112,27 @@ onMounted(() => {
                         </table>
                     </div>
                 </div>
+                <transition name="slide-fade" mode="out-in">
+                    <div v-if="notification.message"
+                        :class="`fixed top-4 right-4 p-5 bg-white shadow-lg rounded-lg z-10 flex items-center space-x-2 
+                        ${notification.type === 'success' ? 'border-l-8 border-blue-primary text-blue-primary' : 'border-l-8 border-red-500 text-red-600'}`">
+                        <p class="text-[18px] font-semibold">{{ notification.message }}</p>
+                    </div>
+                </transition>
             </div>
         </div>
     </div>
 </template>
 
-<style></style>
+<style scoped>
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+    transition: all 0.5s ease;
+}
+
+.slide-fade-enter,
+.slide-fade-leave-to {
+    transform: translateX(100%);
+    opacity: 0;
+}
+</style>

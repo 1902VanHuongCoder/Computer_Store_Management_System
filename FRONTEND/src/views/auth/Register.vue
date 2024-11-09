@@ -97,6 +97,11 @@ const register = async () => {
         return showMessage('Mật khẩu phải tối thiểu 6 kí tự!', 'error');
     }
 
+    const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    if (!phonePattern.test(SoDienThoai.value.trim())) {
+        return showMessage('Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại hợp lệ.', 'error'); 
+    }
+
     try {
         const newNhanVien = {
             HoTen: HoTen.value,

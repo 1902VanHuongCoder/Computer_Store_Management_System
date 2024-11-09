@@ -651,3 +651,167 @@ ALTER TABLE NhanVien CHANGE COLUMN MaNhanVien MaNhanVien VARCHAR(255) NOT NULL;
 ALTER TABLE NhanVien 
 ADD COLUMN ChucVu VARCHAR(255),
 ADD COLUMN MatKhau VARCHAR(255);
+
+-- NHÂN VIÊN ------------
+-- 1. Kiểm tra
+DELIMITER //
+
+CREATE TRIGGER BeforeInsertNhanVien
+BEFORE INSERT ON NhanVien
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra số điện thoại đã tồn tại trong bảng NhanVien
+    IF EXISTS (SELECT 1 FROM NhanVien WHERE SoDienThoai = NEW.SoDienThoai) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại này đã được đăng ký';
+    END IF;
+
+    -- Kiểm tra tên nhân viên không được để trống
+    IF NEW.HoTen IS NULL OR NEW.HoTen = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Tên nhân viên không được để trống';
+    END IF;
+    
+    -- Kiểm tra số điện thoại
+    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
+    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
+    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
+    END IF;
+    
+    -- Kiểm tra ngày sinh không được để trống
+    IF NEW.NgaySinh IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Ngày sinh không được để trống'; 
+    END IF;
+
+    -- Kiểm tra chức vụ không được để trống
+    IF NEW.ChucVu IS NULL OR NEW.ChucVu = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Chức vụ không được để trống';
+    END IF;
+
+    -- Kiểm tra mật khẩu không được để trống và phải có ít nhất 6 ký tự
+    IF NEW.MatKhau IS NULL OR NEW.MatKhau = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mật khẩu không được để trống';
+    ELSEIF LENGTH(NEW.MatKhau) < 6 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mật khẩu phải có ít nhất 6 ký tự';
+    END IF;
+END //
+
+DELIMITER ;
+
+-- 2. Lấy tất cả
+DELIMITER //
+CREATE PROCEDURE GetAllNhanVien()
+BEGIN
+    -- Lấy toàn bộ thông tin từ bảng NhanVien
+    SELECT * FROM NhanVien;
+END //
+DELIMITER ;
+
+-- 3. Lấy mã
+DELIMITER //
+CREATE PROCEDURE GetNhanVienById(IN p_MaNhanVien VARCHAR(255))
+BEGIN
+    SELECT * FROM NhanVien WHERE MaNhanVien = p_MaNhanVien;
+END //
+DELIMITER ;
+
+-- 4. Thêm
+DELIMITER //
+CREATE PROCEDURE AddNhanVien(
+    IN p_MaNhanVien VARCHAR(255),
+    IN p_HoTen VARCHAR(255),
+    IN p_NgaySinh DATE,
+    IN p_SoDienThoai VARCHAR(20),
+    IN p_ChucVu VARCHAR(100),
+    IN p_MatKhau VARCHAR(255)
+)
+BEGIN
+    INSERT INTO NhanVien (MaNhanVien, HoTen, NgaySinh, SoDienThoai, ChucVu, MatKhau) 
+    VALUES (p_MaNhanVien, p_HoTen, p_NgaySinh, p_SoDienThoai, p_ChucVu, p_MatKhau);
+END //
+DELIMITER ;
+
+-- 5. Chỉnh sửa
+DELIMITER //
+CREATE PROCEDURE UpdateNhanVien(
+    IN p_MaNhanVien VARCHAR(255),
+    IN p_HoTen VARCHAR(255),
+    IN p_NgaySinh DATE,
+    IN p_SoDienThoai VARCHAR(20),
+    IN p_ChucVu VARCHAR(100),
+    IN p_MatKhau VARCHAR(255)
+)
+BEGIN
+    UPDATE NhanVien
+    SET HoTen = p_HoTen, NgaySinh = p_NgaySinh, SoDienThoai = p_SoDienThoai, 
+        ChucVu = p_ChucVu, MatKhau = p_MatKhau
+    WHERE MaNhanVien = p_MaNhanVien;
+END //
+DELIMITER ;
+
+-- 6. Xóa
+DELIMITER //
+CREATE PROCEDURE DeleteNhanVien(
+    IN p_MaNhanVien VARCHAR(255)
+)
+BEGIN
+    DELETE FROM NhanVien WHERE MaNhanVien = p_MaNhanVien;
+END //
+DELIMITER ;
+
+-- 7. Kiểm tra
+DELIMITER //
+
+CREATE TRIGGER BeforeUpdateNhanVien
+BEFORE UPDATE ON NhanVien
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra tên nhân viên không được để trống khi cập nhật
+    IF NEW.HoTen IS NULL OR NEW.HoTen = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Tên nhân viên không được để trống';
+    END IF;
+
+    -- Kiểm tra số điện thoại không được để trống
+    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
+    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
+    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
+    END IF;
+
+    -- Kiểm tra chức vụ không được để trống khi cập nhật
+    IF NEW.ChucVu IS NULL OR NEW.ChucVu = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Chức vụ không được để trống';
+    END IF;
+
+    -- Kiểm tra mật khẩu chỉ khi người dùng nhập mật khẩu mới
+    IF NEW.MatKhau IS NOT NULL AND NEW.MatKhau != '' THEN
+        IF LENGTH(NEW.MatKhau) < 6 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Mật khẩu phải có ít nhất 6 ký tự';
+        END IF;
+    ELSE
+        -- Nếu không nhập mật khẩu mới, giữ mật khẩu cũ
+        SET NEW.MatKhau = OLD.MatKhau;
+    END IF;
+END //
+
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS BeforeUpdateNhanVien;

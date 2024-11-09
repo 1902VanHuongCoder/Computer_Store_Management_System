@@ -57,6 +57,9 @@ module.exports = {
     const { MaNV } = req.params;
     NhanVien.delete(MaNV, (err, result) => {
       if (err) {
+        if (err.sqlMessage) {
+          return res.status(400).json({ error: err.sqlMessage });
+        }
         return res.status(500).json({ error: "Lỗi khi xóa nhân viên" });
       }
       res.json({ message: "Xóa nhân viên thành công", result });
