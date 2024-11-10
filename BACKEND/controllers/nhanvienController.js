@@ -31,7 +31,9 @@ module.exports = {
       return res.status(400).json({ error: "Mật khẩu không được để trống" });
     }
     if (data.MatKhau.length < 6) {
-        return res.status(400).json({ error: "Mật khẩu phải có ít nhất 6 ký tự" });
+      return res
+        .status(400)
+        .json({ error: "Mật khẩu phải có ít nhất 6 ký tự" });
     }
     NhanVien.create(data, (err, result) => {
       if (err) {
@@ -61,6 +63,27 @@ module.exports = {
         return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Xóa nhân viên thành công", result });
+    });
+  },
+
+  loginNhanVien: (req, res) => {
+    const { SoDienThoai, MatKhau } = req.body;
+
+    if (!SoDienThoai) {
+      return res
+        .status(400)
+        .json({ error: "Số điện thoại không được để trống." });
+    } else if (!MatKhau) {
+      return res
+        .status(400)
+        .json({ error: "Mật khẩu không được để trống." });
+    }
+
+    NhanVien.login(SoDienThoai, MatKhau, (err, result) => {
+      if (err) {
+        return res.status(401).json({ error: err.message });
+      }
+      res.json({ message: "Đăng nhập thành công", data: result });
     });
   },
 };

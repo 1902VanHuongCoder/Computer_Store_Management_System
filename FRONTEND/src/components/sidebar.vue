@@ -1,4 +1,7 @@
 <script setup>
+import { ref, computed } from 'vue';
+
+const chucVu = ref(localStorage.getItem('chucVu'));
 const sidebarMenu = [
     {
         name: "Danh sách thiết bị",
@@ -45,6 +48,14 @@ const sidebarMenu = [
         path: "detailsBillInfo",
     },
 ];
+
+const filteredSidebarMenu = computed(() => {
+    if (chucVu.value === 'Quản trị viên') {
+        return sidebarMenu;
+    } else {
+        return sidebarMenu.filter((item, index) => index !== 2 && index !== 6);
+    }
+});
 </script>
 
 <template>
@@ -56,7 +67,7 @@ const sidebarMenu = [
         <hr class="bg-blue-primary h-[2px]" />
         <h2 class="font-semibold text-gray-400 text-lg uppercase">Computer Store Manager</h2>
         <ul class="flex flex-col gap-2">
-            <router-link :to="item.path" v-for="item in sidebarMenu" :key="item" active-class="active-link"
+            <router-link :to="item.path" v-for="item in filteredSidebarMenu" :key="item" active-class="active-link"
                 class="flex gap-3 text-[16px] items-center font-semibold text-gray-700 cursor-pointer px-2 py-3 shadow-none hover:bg-blue-primary hover:text-white rounded-lg transition-all duration-200 hover:shadow-xl">
                 <i :class="item.icon"></i>
                 <p>{{ item.name }}</p>

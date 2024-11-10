@@ -7,5 +7,6 @@ router.get('/:MaNV', nhanvienController.getNhanVienById);
 router.post('/', nhanvienController.addNhanVien);
 router.put('/:MaNV', nhanvienController.updateNhanVien);
 router.delete('/:MaNV', nhanvienController.deleteNhanVien);
+router.post('/login', nhanvienController.loginNhanVien);
 
 module.exports = router;

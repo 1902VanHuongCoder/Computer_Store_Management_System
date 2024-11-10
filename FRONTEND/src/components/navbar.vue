@@ -1,6 +1,11 @@
 <script setup>
-import { onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
+
+const chucVu = ref(localStorage.getItem('chucVu'));
+const hoTen = ref(localStorage.getItem('hoTen'));
 const sidebarMobile = [
     {
         name: "Danh sách thiết bị",
@@ -48,6 +53,20 @@ const sidebarMobile = [
     },
 ];
 
+const filteredSidebarMobile = computed(() => {
+    if (chucVu.value === 'Quản trị viên') {
+        return sidebarMobile;
+    } else {
+        return sidebarMobile.filter((item, index) => index !== 2 && index !== 6);
+    }
+});
+
+const dangXuat = () => {
+    localStorage.removeItem('chucVu');
+    localStorage.removeItem('hoTen');
+    router.push('/login');
+};
+
 onMounted(() => {
     const open = $('.openSidebar');
     const close = $('.closeSidebar');
@@ -71,11 +90,11 @@ onMounted(() => {
             <div class="flex gap-4 rounded-lg items-center p-2">
                 <img src="../assets/img/avatar.jpg" class="w-14 h-14 rounded-full" alt="" />
                 <div class="flex flex-col gap-1">
-                    <p class="font-bold text-[14px] lg:text-lg">Lê Hữu Hoàng Anh</p>
-                    <small class="text-[12px] font-semibold text-blue-secondary">JeiKei@gmail.com</small>
+                    <p class="font-bold text-[14px] lg:text-lg">{{ hoTen }}</p>
+                    <small class="text-[12px] font-semibold">Chức vụ : <span class="text-blue-secondary">{{ chucVu }}</span></small>
                 </div>
             </div>
-            <button class="px-5 py-2 bg-blue-primary rounded-lg font-semibold text-white lg:block hidden">Đăng
+            <button @click.prevent="dangXuat" class="px-5 py-2 bg-blue-primary rounded-lg font-semibold text-white lg:block hidden">Đăng
                 xuất</button>
         </div>
         <div class="sidebar fixed top-0 left-[-100%] bg-white w-full min-h-full p-4">
@@ -86,7 +105,7 @@ onMounted(() => {
                 </div>
                 <hr class="bg-blue-primary h-[2px] my-5" />
                 <ul class="flex flex-col gap-6">
-                    <li v-for="item in sidebarMobile" :key="item"
+                    <li v-for="item in filteredSidebarMobile" :key="item"
                         class="flex gap-3 items-center font-semibold text-gray-600 cursor-pointer hover:text-blue-primary transition-all duration-200">
                         <i :class="item.icon"></i>
                         <p>{{ item.name }}</p>

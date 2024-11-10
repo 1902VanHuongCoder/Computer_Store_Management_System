@@ -91,6 +91,31 @@ const NhanVien = {
       callback(null, results);
     });
   },
+
+  login: async (soDienThoai, matKhau, callback) => {
+    const sql = "CALL Login(?)"; // Gọi stored procedure với số điện thoại
+    db.query(sql, [soDienThoai], async (err, results) => {
+      if (err) {
+        return callback(err);
+      }
+
+      // Kiểm tra xem có kết quả trả về không
+      if (results.length === 0 || results[0].length === 0) {
+        return callback(new Error("Số điện thoại không đúng"));
+      }
+
+      const user = results[0][0]; // Lấy thông tin người dùng từ kết quả
+
+      // So sánh mật khẩu
+      const isMatch = await bcrypt.compare(matKhau, user.MatKhau);
+      if (!isMatch) {
+        return callback(new Error("Mật khẩu không đúng"));
+      }
+
+      // Nếu đăng nhập thành công, trả về thông tin nhân viên
+      callback(null, user);
+    });
+  },
 };
 
 module.exports = NhanVien;
