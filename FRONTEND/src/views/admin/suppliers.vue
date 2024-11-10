@@ -18,14 +18,6 @@ const showMessage = (message, type) => {
 };  
 
 const addSuppLiers = async () => {
-    if (!nameSuppliers.value.trim() || !phoneSuppliers.value.trim() || !addressSuppliers.value.trim()) {
-        return showMessage('Vui lòng nhập đầy đủ thông tin!', 'error'); 
-    }
-
-    const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})$/;
-    if (!phonePattern.test(phoneSuppliers.value.trim())) {
-        return showMessage('Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại hợp lệ.', 'error'); 
-    }
 
     try {
         const newSuppLier = {
@@ -39,7 +31,7 @@ const addSuppLiers = async () => {
         showMessage('Nhà cung cấp đã được thêm thành công!', 'success');
         await getSuppLiers();
     } catch (error) {
-        showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
     
 };
@@ -62,7 +54,7 @@ const deleteSuppliers = async (maNCC) => {
         showMessage('Nhà cung cấp đã được xóa thành công!', 'success');
         await getSuppLiers();
     } catch (error) {
-        showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 }
 

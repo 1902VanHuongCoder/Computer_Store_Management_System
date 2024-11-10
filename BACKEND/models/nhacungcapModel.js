@@ -24,7 +24,13 @@ const NhaCungCap = {
     const { TenNhaCungCap, DiaChi, SoDienThoai } = data;
     const sql = "CALL AddNhaCungCap(?, ?, ?)"; // Gọi stored procedure AddNhaCungCap
     db.query(sql, [TenNhaCungCap, DiaChi, SoDienThoai], (err, results) => {
-      if (err) return callback(err);
+      if (err) {
+        if (err.code === "45000") {
+          console.error(err.sqlMessage);
+          return callback(new Error(err.sqlMessage));
+        }
+        return callback(err);
+      }
       callback(null, results); // Trả về kết quả thêm
     });
   },
@@ -37,7 +43,13 @@ const NhaCungCap = {
       sql,
       [MaNCC, TenNhaCungCap, DiaChi, SoDienThoai],
       (err, results) => {
-        if (err) return callback(err);
+        if (err) {
+          if (err.code === "45000") {
+            console.error(err.sqlMessage);
+            return callback(new Error(err.sqlMessage));
+          }
+          return callback(err);
+        }
         callback(null, results); // Trả về kết quả cập nhật
       }
     );
@@ -49,6 +61,7 @@ const NhaCungCap = {
     db.query(sql, [MaNCC], (err, results) => {
       if (err) {
         if (err.code === "45000") {
+          console.error(err.sqlMessage);
           return callback(new Error(err.sqlMessage));
         }
         return callback(err);

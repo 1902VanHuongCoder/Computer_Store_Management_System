@@ -24,7 +24,12 @@ const NhaSanXuat = {
     const { TenNSX, QuocGia } = data;
     const sql = "CALL AddNhaSanXuat(?, ?)"; // Gọi stored procedure AddNhaSanXuat
     db.query(sql, [TenNSX, QuocGia], (err, results) => {
-      if (err) return callback(err);
+      if (err) {
+        if (err.code === "45000") {
+          return callback(new Error(err.sqlMessage));
+        }
+        return callback(err);
+      }
       callback(null, results); // Trả về kết quả thêm
     });
   },
@@ -34,7 +39,12 @@ const NhaSanXuat = {
     const { TenNSX, QuocGia } = data;
     const sql = "CALL UpdateNhaSanXuat(?, ?, ?)"; // Gọi stored procedure UpdateNhaSanXuat
     db.query(sql, [MaNSX, TenNSX, QuocGia], (err, results) => {
-      if (err) return callback(err);
+      if (err) {
+        if (err.code === "45000") {
+          return callback(new Error(err.sqlMessage));
+        }
+        return callback(err);
+      }
       callback(null, results); // Trả về kết quả cập nhật
     });
   },
@@ -44,7 +54,10 @@ const NhaSanXuat = {
     const sql = "CALL DeleteNhaSanXuat(?)";
     db.query(sql, [MaNSX], (err, results) => {
       if (err) {
-        return callback(new Error(err.sqlMessage));
+        if (err.code === "45000") {
+          return callback(new Error(err.sqlMessage));
+        }
+        return callback(err);
       }
       callback(null, results);
     });

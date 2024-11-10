@@ -44,7 +44,7 @@ const editTypeDevice = async () => {
             router.push('/typedevice');
         }, 2000);
     } catch(error) {
-        showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+        showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 }
 

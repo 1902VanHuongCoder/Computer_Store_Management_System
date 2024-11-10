@@ -18,9 +18,6 @@ const showMessage = (message, type) => {
 };  
 
 const addTypeDevices = async () => {
-    if (!nameTypeDevice.value.trim() || !unitOfCalculation.value.trim()) {
-        return showMessage('Vui lòng nhập đầy đủ thông tin!', 'error'); 
-    }
 
     try {
         const newTypeDevice = {
@@ -34,7 +31,7 @@ const addTypeDevices = async () => {
         showMessage('Loại thiết bị đã được thêm thành công!', 'success');
         await getTypeDevices();
     } catch (error) {
-        showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 };
 

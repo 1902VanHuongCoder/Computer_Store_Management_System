@@ -21,10 +21,6 @@ const showMessage = (message, type) => {
 };  
 
 const addManufacturer = async () => {
-    if (!nameManufacturers.value.trim() || !country.value.trim()) {
-        return showMessage('Vui lòng nhập đầy đủ thông tin!', 'error');
-    }
-    
     try {
         const newManufacturer = {
             TenNSX: nameManufacturers.value,
@@ -36,7 +32,7 @@ const addManufacturer = async () => {
         showMessage('Nhà xuất bản được thêm thành công!', 'success');
         await getManufacturers();
     } catch (error) {
-        showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 };
 

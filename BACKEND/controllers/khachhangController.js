@@ -29,7 +29,7 @@ module.exports = {
     const data = req.body;
     KhachHang.create(data, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi thêm khách hàng" });
+        return res.status(400).json({ error: err.message });
       }
       res.status(201).json({ message: "Thêm khách hàng thành công", result });
     });
@@ -41,7 +41,7 @@ module.exports = {
     const data = req.body;
     KhachHang.update(MaKH, data, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi cập nhật khách hàng" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Cập nhật khách hàng thành công", result });
     });
@@ -52,10 +52,7 @@ module.exports = {
     const { MaKH } = req.params;
     KhachHang.delete(MaKH, (err, result) => {
       if (err) {
-        if (err.sqlMessage) {
-          return res.status(400).json({ error: err.sqlMessage });
-        }
-        return res.status(500).json({ error: "Lỗi khi xóa khách hàng" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Xóa khách hàng thành công", result });
     });

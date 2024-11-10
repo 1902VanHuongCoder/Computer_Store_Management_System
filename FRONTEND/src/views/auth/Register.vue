@@ -89,18 +89,6 @@ const showMessage = (message, type) => {
     }, 3000);
 };
 const register = async () => {
-    if (!HoTen.value.trim() || !NgaySinh.value.trim() || !SoDienThoai.value.trim() || !ChucVu.value.trim() || !MatKhau.value.trim()) {
-        return showMessage('Vui lòng nhập đầy đủ thông tin!', 'error');
-    }
-
-    if (MatKhau.value.length < 6) {
-        return showMessage('Mật khẩu phải tối thiểu 6 kí tự!', 'error');
-    }
-
-    const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})$/;
-    if (!phonePattern.test(SoDienThoai.value.trim())) {
-        return showMessage('Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại hợp lệ.', 'error'); 
-    }
 
     try {
         const newNhanVien = {
@@ -119,8 +107,7 @@ const register = async () => {
             router.push('/login');
         }, 2000);
     }  catch (error) {
-        console.error('Error:', error);
-        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error'); // Cập nhật thông báo lỗi
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 };
 </script>

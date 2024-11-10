@@ -24,7 +24,12 @@ const LoaiThietBi = {
     const { TenLoai, DonViTinh, GhiChu } = data;
     const sql = "CALL AddLoaiThietBi(?, ?, ?)"; // Gọi stored procedure AddLoaiThietBi
     db.query(sql, [TenLoai, DonViTinh, GhiChu], (err, results) => {
-      if (err) return callback(err);
+      if (err) {
+        if (err.code === "45000") {
+          return callback(new Error(err.sqlMessage));
+        }
+        return callback(err);
+      }
       callback(null, results); // Trả về kết quả thêm
     });
   },
@@ -37,7 +42,12 @@ const LoaiThietBi = {
       sql,
       [MaLoaiThietBi, TenLoai, DonViTinh, GhiChu],
       (err, results) => {
-        if (err) return callback(err);
+        if (err) {
+          if (err.code === "45000") {
+            return callback(new Error(err.sqlMessage));
+          }
+          return callback(err);
+        }
         callback(null, results); // Trả về kết quả cập nhật
       }
     );
@@ -49,7 +59,6 @@ const LoaiThietBi = {
     db.query(sql, [MaLoaiThietBi], (err, results) => {
       if (err) {
         if (err.code === "45000") {
-          console.error(err.sqlMessage)
           return callback(new Error(err.sqlMessage));
         }
         return callback(err);

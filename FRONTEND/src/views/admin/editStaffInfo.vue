@@ -39,19 +39,19 @@ const getStaffByID = async (id) => {
 };
 
 const editStaffInfo = async () => {
-    if (password.value !== "" && password.value !== confirmPassword.value) {
-        showMessage('Mật khẩu và xác nhận mật khẩu không trùng khớp!', 'error');
-        return;
-    }
+    // if (password.value !== "" && password.value !== confirmPassword.value) {
+    //     showMessage('Mật khẩu và xác nhận mật khẩu không trùng khớp!', 'error');
+    //     return;
+    // }
 
-    if (!nameStaff.value.trim() || !dateStaff.value.trim() || !phoneStaff.value.trim() || !poision.value.trim()) {
-        return showMessage('Vui lòng nhập đầy đủ thông tin!', 'error');
-    }
+    // if (!nameStaff.value.trim() || !dateStaff.value.trim() || !phoneStaff.value.trim() || !poision.value.trim()) {
+    //     return showMessage('Vui lòng nhập đầy đủ thông tin!', 'error');
+    // }
 
-    const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})$/;
-    if (!phonePattern.test(phoneStaff.value.trim())) {
-        return showMessage('Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại hợp lệ.', 'error');
-    }
+    // const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    // if (!phonePattern.test(phoneStaff.value.trim())) {
+    //     return showMessage('Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại hợp lệ.', 'error');
+    // }
 
     try {
         const updateStaffInfo = {
@@ -73,7 +73,7 @@ const editStaffInfo = async () => {
             router.push('/staffList');
         }, 2000);
     } catch (error) {
-        showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 }
 

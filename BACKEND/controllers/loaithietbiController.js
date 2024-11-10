@@ -29,7 +29,7 @@ module.exports = {
     const data = req.body;
     LoaiThietBi.create(data, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi thêm loại thiết bị" });
+        return res.status(400).json({ error: err.message });
       }
       res
         .status(201)
@@ -43,9 +43,7 @@ module.exports = {
     const data = req.body;
     LoaiThietBi.update(MaLoaiThietBi, data, (err, result) => {
       if (err) {
-        return res
-          .status(500)
-          .json({ error: "Lỗi khi cập nhật loại thiết bị" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Cập nhật loại thiết bị thành công", result });
     });

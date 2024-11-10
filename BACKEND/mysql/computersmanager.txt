@@ -143,22 +143,12 @@ CREATE PROCEDURE AddNhaSanXuat(
     IN p_QuocGia VARCHAR(255)
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
-        ROLLBACK;
-    END;
-    
-    -- Bắt đầu transaction để đảm bảo toàn bộ quá trình thực hiện thành công hoặc rollback
-    START TRANSACTION;
-
     -- Thêm nhà sản xuất mới vào bảng
     INSERT INTO NhaSanXuat (TenNSX, QuocGia) VALUES (p_TenNSX, p_QuocGia);
-
-    -- Commit transaction nếu mọi thứ thành công
-    COMMIT;
 END //
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS AddNhaSanXuat;
 -- Kiểm tra khi xóa
 DELIMITER //
 
@@ -181,23 +171,12 @@ CREATE PROCEDURE DeleteNhaSanXuat(
     IN p_MaNSX INT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
-        ROLLBACK;
-    END;
-    
-    -- Bắt đầu transaction
-    START TRANSACTION;
-
     -- Xóa nhà sản xuất dựa vào MaNSX
     DELETE FROM NhaSanXuat WHERE MaNSX = p_MaNSX;
-
-    -- Commit transaction nếu mọi thứ thành công
-    COMMIT;
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS DeleteNhaSanXuat;
 -- 7. Tạo Stored Procedure để cập nhật thông tin nhà sản xuất
 DELIMITER //
 CREATE PROCEDURE UpdateNhaSanXuat(
@@ -206,25 +185,14 @@ CREATE PROCEDURE UpdateNhaSanXuat(
     IN p_QuocGia VARCHAR(255)
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
-        ROLLBACK;
-    END;
-    
-    -- Bắt đầu transaction
-    START TRANSACTION;
-
     -- Cập nhật thông tin nhà sản xuất dựa trên MaNSX
     UPDATE NhaSanXuat
     SET TenNSX = p_TenNSX, QuocGia = p_QuocGia
     WHERE MaNSX = p_MaNSX;
-
-    -- Commit transaction nếu mọi thứ thành công
-    COMMIT;
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS UpdateNhaSanXuat;
 -- 8. Tạo Trigger để kiểm tra khi cập nhật nhà sản xuất
 DELIMITER //
 CREATE TRIGGER BeforeUpdateNhaSanXuat
@@ -236,8 +204,16 @@ BEGIN
         SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
         SET MESSAGE_TEXT = 'Tên nhà sản xuất không được để trống'; -- Thông báo lỗi
     END IF;
+
+    -- Kiểm tra quốc gia không được để trống khi cập nhật
+    IF NEW.QuocGia IS NULL OR NEW.QuocGia = '' THEN
+        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
+        SET MESSAGE_TEXT = 'Quốc gia không được để trống'; -- Thông báo lỗi
+    END IF;
 END //
 DELIMITER ;
+
+DROP TRIGGER IF EXISTS BeforeUpdateNhaSanXuat;
 
 -- NHÀ CUNG CẤP ------------------------------
 -- 1. Tạo Trigger để kiểm tra dữ liệu trước khi thêm mới nhà cung cấp
@@ -251,6 +227,7 @@ BEGIN
         SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
         SET MESSAGE_TEXT = 'Tên nhà cung cấp không được để trống'; -- Thông báo lỗi
     END IF;
+
     -- Kiểm tra số điện thoại
     IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
         SIGNAL SQLSTATE '45000'
@@ -261,7 +238,11 @@ BEGIN
     ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
+    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
     END IF;
+
     -- Kiểm tra địa chỉ không được để trống
     IF NEW.DiaChi IS NULL OR NEW.DiaChi = '' THEN
         SIGNAL SQLSTATE '45000'
@@ -297,23 +278,13 @@ CREATE PROCEDURE AddNhaCungCap(
     IN p_SoDienThoai VARCHAR(20)
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
-        ROLLBACK;
-    END;
-    
-    -- Bắt đầu transaction để đảm bảo toàn bộ quá trình thực hiện thành công hoặc rollback
-    START TRANSACTION;
-
     -- Thêm nhà cung cấp mới vào bảng
     INSERT INTO NhaCungCap (TenNhaCungCap, DiaChi, SoDienThoai) 
     VALUES (p_TenNhaCungCap, p_DiaChi, p_SoDienThoai);
-
-    -- Commit transaction nếu mọi thứ thành công
-    COMMIT;
 END //
 DELIMITER ;
+
+DROP PROCEDURE IF EXISTS AddNhaCungCap;
 -- Kiểm tra trước khi xóa
 DELIMITER //
 
@@ -342,23 +313,12 @@ CREATE PROCEDURE DeleteNhaCungCap(
     IN p_MaNhaCungCap INT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
-        ROLLBACK;
-    END;
-    
-    -- Bắt đầu transaction
-    START TRANSACTION;
-
     -- Xóa nhà cung cấp dựa vào MaNhaCungCap
     DELETE FROM NhaCungCap WHERE MaNhaCungCap = p_MaNhaCungCap;
-
-    -- Commit transaction nếu mọi thứ thành công
-    COMMIT;
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS DeleteNhaCungCap;
 -- 6. Tạo Stored Procedure để cập nhật thông tin nhà cung cấp
 DELIMITER //
 CREATE PROCEDURE UpdateNhaCungCap(
@@ -368,26 +328,18 @@ CREATE PROCEDURE UpdateNhaCungCap(
     IN p_SoDienThoai VARCHAR(20)
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
-        ROLLBACK;
-    END;
-    
-    -- Bắt đầu transaction
-    START TRANSACTION;
-
     -- Cập nhật thông tin nhà cung cấp dựa trên MaNhaCungCap
     UPDATE NhaCungCap
     SET TenNhaCungCap = p_TenNhaCungCap, DiaChi = p_DiaChi, SoDienThoai = p_SoDienThoai
     WHERE MaNhaCungCap = p_MaNhaCungCap;
-
-    -- Commit transaction nếu mọi thứ thành công
-    COMMIT;
 END //
 DELIMITER ;
+DROP PROCEDURE IF EXISTS UpdateNhaCungCap;
 
+-- kiểm tra khi cập nhật
 DELIMITER //
+DROP TRIGGER IF EXISTS BeforeUpdateNhaCungCap;
+
 CREATE TRIGGER BeforeUpdateNhaCungCap
 BEFORE UPDATE ON NhaCungCap
 FOR EACH ROW
@@ -401,17 +353,25 @@ BEGIN
     -- Kiểm tra số điện thoại khi cập nhật
     IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống khi cập nhật';
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
     ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
-    
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số khi cập nhật';
+        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
     ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số khi cập nhật';
+        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
+    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
     END IF;
+    
+    -- Kiểm tra địa chỉ không được để trống
+    IF NEW.DiaChi IS NULL OR NEW.DiaChi = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Địa chỉ không được để trống'; 
+    END IF;
+END //
 DELIMITER ;
-DROP TRIGGER IF EXISTS BeforeUpdateNhaCungCap;
 
 -- LOẠI THIET BỊ ------------------------------
 -- 1. Tạo Trigger để kiểm tra dữ liệu
@@ -457,24 +417,12 @@ CREATE PROCEDURE AddLoaiThietBi(
     IN p_GhiChu TEXT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
-        ROLLBACK;
-    END;
-
-    -- Bắt đầu transaction để đảm bảo toàn bộ quá trình thực hiện thành công hoặc rollback
-    START TRANSACTION;
-
     -- Thêm loại thiết bị mới vào bảng
     INSERT INTO LoaiThietBi (TenLoai, DonViTinh, GhiChu) 
     VALUES (p_TenLoai, p_DonViTinh, p_GhiChu);
-
-    -- Commit transaction nếu mọi thứ thành công
-    COMMIT;
 END //
 DELIMITER ;
-
+DROP PROCEDURE IF EXISTS AddLoaiThietBi;
 -- Kiểm tra trước khi xóa
 DELIMITER //
 
@@ -502,6 +450,7 @@ BEGIN
 END //
 DELIMITER ;
 DROP PROCEDURE IF EXISTS DeleteLoaiThietBi;
+
 -- 6. Chỉnh sửa loại thiết bị
 DELIMITER //
 CREATE PROCEDURE UpdateLoaiThietBi(
@@ -511,25 +460,14 @@ CREATE PROCEDURE UpdateLoaiThietBi(
     IN p_GhiChu TEXT
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        -- Xử lý lỗi và rollback nếu có lỗi xảy ra
-        ROLLBACK;
-    END;
-
-    -- Bắt đầu transaction
-    START TRANSACTION;
-
     -- Cập nhật thông tin loại thiết bị dựa trên MaLoai
     UPDATE LoaiThietBi
     SET TenLoai = p_TenLoai, DonViTinh = p_DonViTinh, GhiChu = p_GhiChu
     WHERE MaLoai = p_MaLoai;
-
-    -- Commit transaction nếu mọi thứ thành công
-    COMMIT;
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS UpdateLoaiThietBi;
 -- 7. Tạo Trigger để kiểm tra khi cập nhật loại thiết bị
 DELIMITER //
 CREATE TRIGGER BeforeUpdateLoaiThietBi
@@ -565,13 +503,16 @@ BEGIN
     -- Kiểm tra số điện thoại không được để trống và chỉ chứa số
     IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống';
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
     ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số';
+        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
     ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số';
+        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
+    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
     END IF;
 
     -- Kiểm tra địa chỉ không được để trống
@@ -582,6 +523,7 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS BeforeInsertKhachHang;
 -- 2. Lấy tất cả -------------
 DELIMITER //
 CREATE PROCEDURE GetAllKhachHang()
@@ -616,6 +558,7 @@ DELIMITER ;
 -- Kiểm tra trước khi xóa
 DELIMITER //
 
+-- Kiểm tra khi xóa
 CREATE TRIGGER BeforeDeleteKhachHang
 BEFORE DELETE ON KhachHang
 FOR EACH ROW
@@ -656,7 +599,7 @@ BEGIN
 END //
 DELIMITER ;
 
--- 7. Kiểm tra khi thêm
+-- 7. Kiểm tra khi sửa
 DELIMITER //
 CREATE TRIGGER BeforeUpdateKhachHang
 BEFORE UPDATE ON KhachHang
@@ -671,13 +614,16 @@ BEGIN
     -- Kiểm tra số điện thoại khi cập nhật
     IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống';
+        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
     ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số';
+        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
     ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số';
+        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
+    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
     END IF;
 
     -- Kiểm tra địa chỉ không được để trống
@@ -687,6 +633,8 @@ BEGIN
     END IF;
 END //
 DELIMITER ;
+
+DROP TRIGGER IF EXISTS BeforeUpdateKhachHang;
 
 ALTER TABLE chiTietPhieuNhap DROP FOREIGN KEY chiTietPhieuNhap_ibfk_2;  
 ALTER TABLE chiTietPhieuXuat DROP FOREIGN KEY chiTietPhieuXuat_ibfk_2;  
@@ -702,7 +650,6 @@ ADD COLUMN MatKhau VARCHAR(255);
 -- NHÂN VIÊN ------------
 -- 1. Kiểm tra
 DELIMITER //
-
 CREATE TRIGGER BeforeInsertNhanVien
 BEFORE INSERT ON NhanVien
 FOR EACH ROW
@@ -729,6 +676,9 @@ BEGIN
     ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
+    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
     END IF;
     
     -- Kiểm tra ngày sinh không được để trống
@@ -752,9 +702,9 @@ BEGIN
         SET MESSAGE_TEXT = 'Mật khẩu phải có ít nhất 6 ký tự';
     END IF;
 END //
-
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS BeforeInsertNhanVien;
 -- 2. Lấy tất cả
 DELIMITER //
 CREATE PROCEDURE GetAllNhanVien()
@@ -853,18 +803,6 @@ BEGIN
         SET MESSAGE_TEXT = 'Tên nhân viên không được để trống';
     END IF;
 
-    -- Kiểm tra số điện thoại không được để trống
-    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
-    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
-    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
-    END IF;
-
     -- Kiểm tra chức vụ không được để trống khi cập nhật
     IF NEW.ChucVu IS NULL OR NEW.ChucVu = '' THEN
         SIGNAL SQLSTATE '45000'
@@ -900,11 +838,12 @@ BEGIN
         SET MESSAGE_TEXT = 'Tên thiết bị không được để trống';
     END IF;
 
- -- Kiểm tra tên thiết bị không được để trống
+    -- Kiểm tra giá thành không được để trống
     IF NEW.GiaThanh IS NULL OR NEW.GiaThanh = '' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Giá thành không được để trống';
     END IF;
+
     -- Kiểm tra giá thành không được âm
     IF NEW.GiaThanh < 0 THEN
         SIGNAL SQLSTATE '45000'
@@ -915,6 +854,24 @@ BEGIN
     IF NEW.ThongSoKT IS NULL OR NEW.ThongSoKT = '' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Thông số kỹ thuật không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhà sản xuất không được để trống
+    IF NEW.MaNSX IS NULL OR NEW.MaNSX = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà sản xuất không được để trống';
+    END IF;
+
+    -- Kiểm tra mã loại thiết bị không được để trống
+    IF NEW.MaLoai IS NULL OR NEW.MaLoai = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã loại thiết bị không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhà cung cấp không được để trống
+    IF NEW.MaNhaCungCap IS NULL OR NEW.MaNhaCungCap = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà cung cấp không được để trống';
     END IF;
 
     -- Kiểm tra mã nhà sản xuất có tồn tại không
@@ -937,6 +894,7 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS BeforeInsertThietBi;
 -- 2. Lấy tất cả thiết bị
 DELIMITER //
 CREATE PROCEDURE GetAllThietBi()
@@ -959,17 +917,18 @@ CREATE TRIGGER BeforeUpdateThietBi
 BEFORE UPDATE ON ThietBi
 FOR EACH ROW
 BEGIN
-    -- Kiểm tra tên thiết bị không được để trống khi cập nhật
+    -- Kiểm tra tên thiết bị không được để trống
     IF NEW.TenThietBi IS NULL OR NEW.TenThietBi = '' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Tên thiết bị không được để trống';
     END IF;
 
-    -- Kiểm tra tên thiết bị không được để trống
+    -- Kiểm tra giá thành không được để trống
     IF NEW.GiaThanh IS NULL OR NEW.GiaThanh = '' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Giá thành không được để trống';
     END IF;
+
     -- Kiểm tra giá thành không được âm
     IF NEW.GiaThanh < 0 THEN
         SIGNAL SQLSTATE '45000'
@@ -980,6 +939,24 @@ BEGIN
     IF NEW.ThongSoKT IS NULL OR NEW.ThongSoKT = '' THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Thông số kỹ thuật không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhà sản xuất không được để trống
+    IF NEW.MaNSX IS NULL OR NEW.MaNSX = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà sản xuất không được để trống';
+    END IF;
+
+    -- Kiểm tra mã loại thiết bị không được để trống
+    IF NEW.MaLoai IS NULL OR NEW.MaLoai = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã loại thiết bị không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhà cung cấp không được để trống
+    IF NEW.MaNhaCungCap IS NULL OR NEW.MaNhaCungCap = '' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà cung cấp không được để trống';
     END IF;
 
     -- Kiểm tra mã nhà sản xuất có tồn tại không
@@ -1002,6 +979,7 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS BeforeUpdateThietBi;
 -- 4. Thêm thiết bị
 DELIMITER //
 CREATE PROCEDURE AddThietBi(

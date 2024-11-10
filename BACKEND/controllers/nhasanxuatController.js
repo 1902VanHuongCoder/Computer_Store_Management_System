@@ -29,7 +29,7 @@ module.exports = {
     const data = req.body;
     NhaSanXuat.create(data, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi thêm nhà sản xuất" });
+        return res.status(400).json({ error: err.message });
       }
       res.status(201).json({ message: "Thêm nhà sản xuất thành công", result });
     });
@@ -41,7 +41,7 @@ module.exports = {
     const data = req.body;
     NhaSanXuat.update(MaNSX, data, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi cập nhật nhà sản xuất" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Cập nhật nhà sản xuất thành công", result });
     });

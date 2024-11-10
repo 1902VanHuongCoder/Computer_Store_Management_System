@@ -23,9 +23,6 @@ const showMessage = (message, type) => {
 };  
 
 const addDevices = async () => {
-    if (!nameTB.value.trim() || !priceTB.value.trim() || !description.value.trim() || !idNSX.value.trim() || !idSupplier.value.trim() || !idType.value.trim()) {
-        return showMessage('Vui lòng nhập thông tin đầy đủ!', 'error');
-    }
     try {
         const newDevices = {
             TenThietBi: nameTB.value,

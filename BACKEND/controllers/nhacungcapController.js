@@ -29,7 +29,7 @@ module.exports = {
     const data = req.body;
     NhaCungCap.create(data, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi thêm nhà cung cấp" });
+        return res.status(400).json({ error: err.message });
       }
       res.status(201).json({ message: "Thêm nhà cung cấp thành công", result });
     });
@@ -41,7 +41,7 @@ module.exports = {
     const data = req.body;
     NhaCungCap.update(MaNCC, data, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi cập nhật nhà cung cấp" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Cập nhật nhà cung cấp thành công", result });
     });
@@ -52,10 +52,7 @@ module.exports = {
     const { MaNCC } = req.params;
     NhaCungCap.delete(MaNCC, (err, result) => {
       if (err) {
-        if (err.sqlMessage) {
-          return res.status(400).json({ error: err.sqlMessage });
-        }
-        return res.status(500).json({ error: "Lỗi khi xóa nhà cung cấp" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Xóa nhà cung cấp thành công", result });
     });

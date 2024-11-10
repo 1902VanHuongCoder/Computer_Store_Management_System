@@ -24,6 +24,16 @@ module.exports = {
 
   addThietBi: (req, res) => {
     const data = req.body;
+    if (!data.MaNSX) {
+      return res.status(400).json({ error: "Mã nhà sản xuất không được để trống" });
+    } else if (!data.MaNhaCungCap){
+      return res.status(400).json({ error: "Mã nhà cung cấp không được để trống" });
+    } else if (!data.MaLoai) {
+      return res.status(400).json({ error: "Mã loại thiết bị không được để trống" });
+    } else if (!data.GiaThanh) {
+      return res.status(400).json({ error: "Giá thành không được để trống" });
+    }
+
     ThietBi.create(data, (err, result) => {
       if (err) {
         return res.status(400).json({ error: err.message });

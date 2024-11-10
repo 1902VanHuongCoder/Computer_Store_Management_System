@@ -24,7 +24,12 @@ const KhachHang = {
     const { TenKhachHang, DiaChi, SoDienThoai } = data;
     const sql = "CALL AddKhachHang(?, ?, ?)"; // Gọi stored procedure AddKhachHang
     db.query(sql, [TenKhachHang, DiaChi, SoDienThoai], (err, results) => {
-      if (err) return callback(err);
+      if (err) {
+        if (err.code === "45000") {
+          return callback(new Error(err.sqlMessage));
+        }
+        return callback(err);
+      }
       callback(null, results); // Trả về kết quả thêm
     });
   },
@@ -34,7 +39,12 @@ const KhachHang = {
     const { TenKhachHang, DiaChi, SoDienThoai } = data;
     const sql = "CALL UpdateKhachHang(?, ?, ?, ?)"; // Gọi stored procedure UpdateKhachHang
     db.query(sql, [MaKH, TenKhachHang, DiaChi, SoDienThoai], (err, results) => {
-      if (err) return callback(err);
+      if (err) {
+        if (err.code === "45000") {
+          return callback(new Error(err.sqlMessage));
+        }
+        return callback(err);
+      }
       callback(null, results); // Trả về kết quả cập nhật
     });
   },

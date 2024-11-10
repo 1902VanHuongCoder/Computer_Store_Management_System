@@ -27,18 +27,19 @@ module.exports = {
   // Thêm nhân viên mới
   addNhanVien: (req, res) => {
     const data = req.body;
-
+    if (!data.MatKhau) {
+      return res.status(400).json({ error: "Mật khẩu không được để trống" });
+    }
+    if (data.MatKhau.length < 6) {
+        return res.status(400).json({ error: "Mật khẩu phải có ít nhất 6 ký tự" });
+    }
     NhanVien.create(data, (err, result) => {
-        if (err) {
-            if (err.message && err.message.includes("Số điện thoại này đã tồn tại")) {
-                return res.status(400).json({ error: "Số điện thoại này đã tồn tại" });
-            }
-            return res.status(500).json({ error: "Lỗi khi thêm nhân viên", details: err });
-        }
-
-        res.status(201).json({ message: "Thêm nhân viên thành công", result });
+      if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      res.status(201).json({ message: "Thêm nhân viên thành công", result });
     });
-},
+  },
 
   // Cập nhật thông tin nhân viên
   updateNhanVien: (req, res) => {
@@ -46,7 +47,7 @@ module.exports = {
     const data = req.body;
     NhanVien.update(MaNV, data, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi cập nhật nhân viên" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Cập nhật nhân viên thành công", result });
     });
@@ -57,10 +58,7 @@ module.exports = {
     const { MaNV } = req.params;
     NhanVien.delete(MaNV, (err, result) => {
       if (err) {
-        if (err.sqlMessage) {
-          return res.status(400).json({ error: err.sqlMessage });
-        }
-        return res.status(500).json({ error: "Lỗi khi xóa nhân viên" });
+        return res.status(400).json({ error: err.message });
       }
       res.json({ message: "Xóa nhân viên thành công", result });
     });

@@ -7,14 +7,6 @@ function randomMaNhanVien() {
 }
 
 const NhanVien = {
-  // Hàm kiểm tra số điện thoại đã tồn tại hay chưa
-  checkPhoneNumberExists: (SoDienThoai, callback) => {
-    const sql = "SELECT COUNT(*) AS count FROM NhanVien WHERE SoDienThoai = ?";
-    db.query(sql, [SoDienThoai], (err, results) => {
-      if (err) return callback(err);
-      callback(null, results[0].count > 0);
-    });
-  },
   getAll: (callback) => {
     const sql = "CALL GetAllNhanVien()";
     db.query(sql, (err, results) => {
@@ -34,25 +26,24 @@ const NhanVien = {
   create: async (data, callback) => {
     const MaNhanVien = randomMaNhanVien();
     const { HoTen, NgaySinh, SoDienThoai, ChucVu, MatKhau } = data;
-    NhanVien.checkPhoneNumberExists(SoDienThoai, async (err, exists) => {
-      if (err) return callback(err);
-      if (exists) {
-        return callback(new Error("Số điện thoại này đã tồn tại"));
-      }
 
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(MatKhau, salt);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(MatKhau, salt);
 
-      const sql = "CALL AddNhanVien(?, ?, ?, ?, ?, ?)";
-      db.query(
-        sql,
-        [MaNhanVien, HoTen, NgaySinh, SoDienThoai, ChucVu, hashedPassword],
-        (err, results) => {
-          if (err) return callback(err);
-          callback(null, results);
+    const sql = "CALL AddNhanVien(?, ?, ?, ?, ?, ?)";
+    db.query(
+      sql,
+      [MaNhanVien, HoTen, NgaySinh, SoDienThoai, ChucVu, hashedPassword],
+      (err, results) => {
+        if (err) {
+          if (err.code === "45000") {
+            return callback(new Error(err.sqlMessage));
+          }
+          return callback(err);
         }
-      );
-    });
+        callback(null, results);
+      }
+    );
   },
 
   update: async (MaNV, data, callback) => {
@@ -77,7 +68,12 @@ const NhanVien = {
       sql,
       [MaNV, HoTen, NgaySinh, SoDienThoai, ChucVu, hashedPassword || MatKhau], // Sử dụng mật khẩu cũ nếu hashedPassword là null
       (err, results) => {
-        if (err) return callback(err);
+        if (err) {
+          if (err.code === "45000") {
+            return callback(new Error(err.sqlMessage));
+          }
+          return callback(err);
+        }
         callback(null, results);
       }
     );
@@ -87,7 +83,7 @@ const NhanVien = {
     const sql = "CALL DeleteNhanVien(?)";
     db.query(sql, [MaNV], (err, results) => {
       if (err) {
-        if (err.code === '45000') {
+        if (err.code === "45000") {
           return callback(new Error(err.sqlMessage));
         }
         return callback(err);

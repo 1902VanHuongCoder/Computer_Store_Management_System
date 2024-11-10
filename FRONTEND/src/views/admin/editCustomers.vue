@@ -49,7 +49,7 @@ const editCustomers = async () => {
             router.push('/customers');
         }, 2000);
     } catch(error) {
-        showMessage('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 }
 

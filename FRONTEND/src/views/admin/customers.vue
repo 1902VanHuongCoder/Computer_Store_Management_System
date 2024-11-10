@@ -22,15 +22,6 @@ const showMessage = (message, type) => {
 };  
 
 const addCustomers = async () => {
-    if (!nameCustomers.value.trim() || !addressCustomers.value.trim() || !phoneCustomers.value.trim()) {
-        return showMessage('Vui lòng nhập đầy đủ thông tin!', 'error');
-    }
-
-    const phonePattern = /^(0[3|5|7|8|9])+([0-9]{8})$/;
-    if (!phonePattern.test(phoneCustomers.value.trim())) {
-        return showMessage('Số điện thoại không đúng định dạng! Vui lòng nhập số điện thoại hợp lệ.', 'error'); 
-    }
-    
     try {
         const newCustomers = {
             TenKhachHang: nameCustomers.value,
@@ -43,7 +34,7 @@ const addCustomers = async () => {
         showMessage('Khách hàng được thêm thành công!', 'success');
         await getCustomers();
     } catch (error) {
-        showMessage('Có lỗi xảy ra, hãy thử lại!', 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 };
 
@@ -66,7 +57,7 @@ const deleteCustomers = async (maKH) => {
         showMessage('Khách hàng đã được xóa thành công!', 'success');
         await getCustomers();
     } catch(error) {
-        showMessage(error, 'error');
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 }
 
