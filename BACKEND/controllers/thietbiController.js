@@ -47,6 +47,15 @@ module.exports = {
   updateThietBi: (req, res) => {
     const { MaTB } = req.params;
     const data = req.body;
+    if (!data.MaNSX) {
+      return res.status(400).json({ error: "Mã nhà sản xuất không được để trống" });
+    } else if (!data.MaNhaCungCap){
+      return res.status(400).json({ error: "Mã nhà cung cấp không được để trống" });
+    } else if (!data.MaLoai) {
+      return res.status(400).json({ error: "Mã loại thiết bị không được để trống" });
+    } else if (!data.GiaThanh) {
+      return res.status(400).json({ error: "Giá thành không được để trống" });
+    }
     ThietBi.update(MaTB, data, (err, result) => {
       if (err) {
         return res.status(400).json({ error: err.message });

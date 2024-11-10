@@ -8,6 +8,8 @@ const nhacungcapRoutes = require('./routes/nhacungcapRoutes');
 const loaithietbiRoutes = require('./routes/loaithietbiRoutes');
 const khachhangRoutes = require('./routes/khachhangRoutes');
 const thietbiRoutes = require('./routes/thietbiRoutes');
+const phieunhapRoutes = require('./routes/phieunhapRoutes');
+const chitietphieunhapRoutes = require('./routes/chitietphieunhapRoutes');
 
 const app = express();
 app.use(cors());
@@ -21,6 +23,8 @@ app.use('/api/nhacungcap', nhacungcapRoutes);
 app.use('/api/loaithietbi', loaithietbiRoutes);
 app.use('/api/khachhang', khachhangRoutes);
 app.use('/api/thietbi', thietbiRoutes);
+app.use('/api/phieunhap', phieunhapRoutes);
+app.use('/api/chitietphieunhap', chitietphieunhapRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

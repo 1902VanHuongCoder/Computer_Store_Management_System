@@ -72,7 +72,7 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/editEntryForm",
+    path: "/editEntryForm/:maPN",
     name: "Edit Entry Form",
     component: EditEntryForm,
     meta: { requiresAuth: true },
@@ -84,7 +84,7 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/editDetailsEntryForm",
+    path: "/editDetailsEntryForm/:maPN/:maThietBi",
     name: "Edit Details Entry Form",
     component: EditDetailsEntryForm,
     meta: { requiresAuth: true },

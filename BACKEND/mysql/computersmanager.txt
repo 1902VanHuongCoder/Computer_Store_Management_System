@@ -825,6 +825,34 @@ DELIMITER ;
 
 DROP TRIGGER IF EXISTS BeforeUpdateNhanVien;
 
+-- Đăng nhập ------------------------
+DELIMITER //
+CREATE PROCEDURE Login(
+    IN p_SoDienThoai VARCHAR(20)
+)
+BEGIN
+    DECLARE v_MatKhau VARCHAR(255);
+    DECLARE v_MaNhanVien VARCHAR(255);
+    DECLARE v_HoTen VARCHAR(255);
+    DECLARE v_ChucVu VARCHAR(100);
+    
+    -- Lấy mật khẩu, mã nhân viên, tên nhân viên và chức vụ từ cơ sở dữ liệu
+    SELECT MatKhau, MaNhanVien, HoTen, ChucVu INTO v_MatKhau, v_MaNhanVien, v_HoTen, v_ChucVu
+    FROM NhanVien
+    WHERE SoDienThoai = p_SoDienThoai;
+
+    -- Kiểm tra xem nhân viên có tồn tại không
+    IF v_MatKhau IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số điện thoại không đúng';
+    END IF;
+
+    -- Nếu đăng nhập thành công, trả về thông tin nhân viên
+    SELECT v_MaNhanVien AS MaNhanVien, v_HoTen AS HoTen, v_ChucVu AS ChucVu, v_MatKhau AS MatKhau;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS Login;
 -- THIẾT BỊ ------------------------------
 -- 1. Kiểm tra trước khi thêm thiết bị
 DELIMITER //
@@ -1046,3 +1074,150 @@ BEGIN
 END //
 DELIMITER ;
 DROP PROCEDURE IF EXISTS DeleteThietBi;
+
+-- THÔNG TIN PHIẾU NHẬP ------------
+ALTER TABLE ChiTietPhieuNhap ADD CONSTRAINT fk_chitietphieunhap_mapn FOREIGN KEY (MaPN) REFERENCES PhieuNhap(MaPN); -- Thêm lại khóa ngoại
+ALTER TABLE ChiTietPhieuXuat ADD CONSTRAINT fk_chitietphieuxuat_mapx FOREIGN KEY (MaPX) REFERENCES PhieuXuat(MaPX); -- Thêm lại khóa ngoại
+
+ALTER TABLE PhieuNhap ADD CONSTRAINT fk_phieunhap_manhacungcap FOREIGN KEY (MaNhaCungCap) REFERENCES NhaCungCap(MaNhaCungCap); -- Thêm lại khóa ngoại
+ALTER TABLE PhieuNhap ADD CONSTRAINT fk_phieunhap_manhanvien FOREIGN KEY (MaNhanVien) REFERENCES NhanVien(MaNhanVien); -- Thêm lại khóa ngoại
+
+ALTER TABLE PhieuXuat ADD CONSTRAINT fk_phieuxuat_makhachhang FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang); -- Thêm lại khóa ngoại
+ALTER TABLE PhieuXuat ADD CONSTRAINT fk_phieuxuat_manhanvien FOREIGN KEY (MaNhanVien) REFERENCES NhanVien(MaNhanVien); -- Thêm lại khóa ngoại
+
+-- 1. Kiểm tra trước khi thêm
+DELIMITER //
+CREATE TRIGGER BeforeInsertPhieuNhap
+BEFORE INSERT ON PhieuNhap
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra mã nhân viên không được để trống
+    IF NEW.MaNhanVien IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhân viên không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhà cung cấp không được để trống
+    IF NEW.MaNhaCungCap IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà cung cấp không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhân viên có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhanVien WHERE MaNhanVien = NEW.MaNhanVien) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhân viên không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã nhà cung cấp có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhaCungCap WHERE MaNhaCungCap = NEW.MaNhaCungCap) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà cung cấp không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+-- 2. Thêm
+DELIMITER //
+CREATE PROCEDURE AddPhieuNhap(
+    IN p_MaNhanVien VARCHAR(255),
+    IN p_MaNhaCungCap INT
+)
+BEGIN
+    DECLARE v_NgayNhap DATE;
+
+    -- Lấy ngày hiện tại
+    SET v_NgayNhap = CURDATE();
+
+    INSERT INTO PhieuNhap (MaNhanVien, MaNhaCungCap, NgayNhap) 
+    VALUES (p_MaNhanVien, p_MaNhaCungCap, v_NgayNhap);
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS AddPhieuNhap;
+-- 3. Kiểm tra khi sửa
+DELIMITER //
+CREATE TRIGGER BeforeUpdatePhieuNhap
+BEFORE UPDATE ON PhieuNhap
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra mã nhân viên không được để trống
+    IF NEW.MaNhanVien IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhân viên không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhà cung cấp không được để trống
+    IF NEW.MaNhaCungCap IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà cung cấp không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhân viên có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhanVien WHERE MaNhanVien = NEW.MaNhanVien) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhân viên không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã nhà cung cấp có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhaCungCap WHERE MaNhaCungCap = NEW.MaNhaCungCap) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhà cung cấp không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+-- 4. Sửa
+DELIMITER //
+CREATE PROCEDURE UpdatePhieuNhap(
+    IN p_MaPN INT,
+    IN p_MaNhanVien VARCHAR(255),
+    IN p_MaNhaCungCap INT
+)
+BEGIN
+    UPDATE PhieuNhap
+    SET MaNhanVien = p_MaNhanVien, MaNhaCungCap = p_MaNhaCungCap
+    WHERE MaPN = p_MaPN;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS UpdatePhieuNhap;
+-- 5. Kiểm tra khi xóa
+DELIMITER //
+CREATE TRIGGER BeforeDeletePhieuNhap
+BEFORE DELETE ON PhieuNhap
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem phiếu nhập có tồn tại trong bảng ChiTietPhieuNhap không
+    IF EXISTS (SELECT 1 FROM ChiTietPhieuNhap WHERE MaPN = OLD.MaPN) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa phiếu nhập này vì đã có chi tiết phiếu nhập liên quan';
+    END IF;
+END //
+DELIMITER ;
+
+-- 6. Xóa
+DELIMITER //
+CREATE PROCEDURE DeletePhieuNhap(
+    IN p_MaPN INT
+)
+BEGIN
+    DELETE FROM PhieuNhap WHERE MaPN = p_MaPN;
+END //
+DELIMITER ;
+
+-- 7. Lấy all
+DELIMITER //
+CREATE PROCEDURE GetAllPhieuNhap()
+BEGIN
+    SELECT * FROM PhieuNhap;
+END //
+DELIMITER ;
+
+-- 8. Lấy theo mã
+DELIMITER //
+CREATE PROCEDURE GetPhieuNhapById(IN p_MaPN INT)
+BEGIN
+    SELECT * FROM PhieuNhap WHERE MaPN = p_MaPN;
+END //
+DELIMITER ;
