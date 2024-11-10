@@ -1221,3 +1221,138 @@ BEGIN
     SELECT * FROM PhieuNhap WHERE MaPN = p_MaPN;
 END //
 DELIMITER ;
+
+-- CHI TIẾT PHIẾU NHẬP --------------
+-- 1. Kiểm tra thêm
+DELIMITER //
+CREATE TRIGGER BeforeInsertChiTietPhieuNhap
+BEFORE INSERT ON ChiTietPhieuNhap
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra mã phiếu nhập không được để trống
+    IF NEW.MaPN IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã phiếu nhập không được để trống';
+    END IF;
+
+    -- Kiểm tra mã thiết bị không được để trống
+    IF NEW.MaThietBi IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
+    END IF;
+
+    -- Kiểm tra mã phiếu nhập có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM PhieuNhap WHERE MaPN = NEW.MaPN) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã phiếu nhập không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã thiết bị có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM ThietBi WHERE MaThietBi = NEW.MaThietBi) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã thiết bị không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+-- 2. Thêm
+DELIMITER //
+CREATE PROCEDURE AddChiTietPhieuNhap(
+    IN p_MaPN INT,
+    IN p_MaThietBi VARCHAR(255),
+    IN p_SoLuong INT,
+    IN p_DonGia DECIMAL(10, 2)
+)
+BEGIN
+    INSERT INTO ChiTietPhieuNhap (MaPN, MaThietBi, SoLuong, DonGia) 
+    VALUES (p_MaPN, p_MaThietBi, p_SoLuong, p_DonGia);
+END //
+DELIMITER ;
+
+-- 3. Kiểm tra sửa
+DELIMITER //
+CREATE TRIGGER BeforeUpdateChiTietPhieuNhap
+BEFORE UPDATE ON ChiTietPhieuNhap
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra mã phiếu nhập không được để trống
+    IF NEW.MaPN IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã phiếu nhập không được để trống';
+    END IF;
+
+    -- Kiểm tra mã thiết bị không được để trống
+    IF NEW.MaThietBi IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
+    END IF;
+
+    -- Kiểm tra mã phiếu nhập có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM PhieuNhap WHERE MaPN = NEW.MaPN) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã phiếu nhập không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã thiết bị có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM ThietBi WHERE MaThietBi = NEW.MaThietBi) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã thiết bị không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+-- 4. Sửa
+DELIMITER //
+CREATE PROCEDURE UpdateChiTietPhieuNhap(
+    IN p_MaPN INT,
+    IN p_MaThietBi VARCHAR(255),
+    IN p_SoLuong INT,
+    IN p_DonGia DECIMAL(10, 2)
+)
+BEGIN
+    UPDATE ChiTietPhieuNhap
+    SET SoLuong = p_SoLuong, DonGia = p_DonGia
+    WHERE MaPN = p_MaPN AND MaThietBi = p_MaThietBi;
+END //
+DELIMITER ;
+
+-- 5. Kiểm tra xóa
+DELIMITER //
+CREATE TRIGGER BeforeDeleteChiTietPhieuNhap
+BEFORE DELETE ON ChiTietPhieuNhap
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem chi tiết phiếu nhập có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM ChiTietPhieuNhap WHERE MaPN = OLD.MaPN AND MaThietBi = OLD.MaThietBi) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Chi tiết phiếu nhập không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+-- 6. Xóa
+DELIMITER //
+CREATE PROCEDURE DeleteChiTietPhieuNhap(
+    IN p_MaPN INT,
+    IN p_MaThietBi VARCHAR(255)
+)
+BEGIN
+    DELETE FROM ChiTietPhieuNhap WHERE MaPN = p_MaPN AND MaThietBi = p_MaThietBi;
+END //
+DELIMITER ;
+
+-- 7. Lấy all
+DELIMITER //
+CREATE PROCEDURE GetAllChiTietPhieuNhap()
+BEGIN
+    SELECT * FROM ChiTietPhieuNhap;
+END //
+DELIMITER ;
+
+-- 8. Lấy mã
+DELIMITER //
+CREATE PROCEDURE GetChiTietPhieuNhapByMaPN(IN p_MaPN INT)
+BEGIN
+    SELECT * FROM ChiTietPhieuNhap WHERE MaPN = p_MaPN;
+END //
+DELIMITER ;
