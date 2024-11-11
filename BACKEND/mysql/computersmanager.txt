@@ -1241,6 +1241,18 @@ BEGIN
         SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
     END IF;
 
+    -- Kiểm tra số lượng không được âm
+    IF NEW.SoLuong < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số lượng không được âm';
+    END IF;
+
+    -- Kiểm tra đơn giá không được âm
+    IF NEW.DonGia < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Đơn giá không được âm';
+    END IF;
+
     -- Kiểm tra mã phiếu nhập có tồn tại không
     IF NOT EXISTS (SELECT 1 FROM PhieuNhap WHERE MaPN = NEW.MaPN) THEN
         SIGNAL SQLSTATE '45000'
@@ -1255,18 +1267,33 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS BeforeInsertChiTietPhieuNhap;
 -- 2. Thêm
 DELIMITER //
+
 CREATE PROCEDURE AddChiTietPhieuNhap(
     IN p_MaPN INT,
     IN p_MaThietBi VARCHAR(255),
-    IN p_SoLuong INT,
-    IN p_DonGia INT
+    IN p_SoLuong INT
 )
 BEGIN
-    INSERT INTO ChiTietPhieuNhap (MaPN, MaThietBi, SoLuong, DonGia) 
-    VALUES (p_MaPN, p_MaThietBi, p_SoLuong, p_DonGia);
+    DECLARE v_GiaThanh DECIMAL(10, 2);
+
+    -- Lấy đơn giá của thiết bị từ bảng ThietBi
+    SELECT GiaThanh INTO v_GiaThanh
+    FROM ThietBi
+    WHERE MaThietBi = p_MaThietBi;
+
+	-- Thêm chi tiết phiếu nhập mới và tính tổng đơn giá
+	INSERT INTO ChiTietPhieuNhap (MaPN, MaThietBi, SoLuong, DonGia)
+	VALUES (p_MaPN, p_MaThietBi, p_SoLuong, p_SoLuong * v_GiaThanh);
+
+	-- Cập nhật số lượng thiết bị trong bảng ThietBi
+	UPDATE ThietBi
+	SET SoLuong = SoLuong + p_SoLuong
+	WHERE MaThietBi = p_MaThietBi;
 END //
+
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS AddChiTietPhieuNhap;
@@ -1287,6 +1314,18 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
     END IF;
+    
+     -- Kiểm tra số lượng không được âm
+    IF NEW.SoLuong < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số lượng không được âm';
+    END IF;
+
+    -- Kiểm tra đơn giá không được âm
+    IF NEW.DonGia < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Đơn giá không được âm';
+    END IF;
 
     -- Kiểm tra mã phiếu nhập có tồn tại không
     IF NOT EXISTS (SELECT 1 FROM PhieuNhap WHERE MaPN = NEW.MaPN) THEN
@@ -1302,19 +1341,35 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS BeforeUpdateChiTietPhieuNhap;
 -- 4. Sửa
 DELIMITER //
+
 CREATE PROCEDURE UpdateChiTietPhieuNhap(
     IN p_MaPN INT,
     IN p_MaThietBi VARCHAR(255),
-    IN p_SoLuong INT,
-    IN p_DonGia INT
+    IN p_SoLuong INT
 )
 BEGIN
+    DECLARE v_GiaThanh DECIMAL(10, 2);
+
+    -- Lấy đơn giá của thiết bị từ bảng ThietBi
+    SELECT GiaThanh INTO v_GiaThanh
+    FROM ThietBi
+    WHERE MaThietBi = p_MaThietBi;
+
+    -- Cập nhật số lượng và đơn giá trong bảng ChiTietPhieuNhap
     UPDATE ChiTietPhieuNhap
-    SET SoLuong = p_SoLuong, DonGia = p_DonGia
+    SET SoLuong = p_SoLuong,
+        DonGia = p_SoLuong * v_GiaThanh
     WHERE MaPN = p_MaPN AND MaThietBi = p_MaThietBi;
+
+    -- Cập nhật số lượng trong bảng ThietBi
+    UPDATE ThietBi
+    SET SoLuong = SoLuong + p_SoLuong
+    WHERE MaThietBi = p_MaThietBi;
 END //
+
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS UpdateChiTietPhieuNhap;
@@ -1519,6 +1574,12 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
     END IF;
+    
+    -- Kiểm tra số lượng không được âm
+    IF NEW.SoLuong < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số lượng không được âm';
+    END IF;
 
     -- Kiểm tra mã phiếu xuất có tồn tại không
     IF NOT EXISTS (SELECT 1 FROM PhieuXuat WHERE MaPX = NEW.MaPX) THEN
@@ -1537,16 +1598,36 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS BeforeInsertChiTietPhieuXuat;
 -- 2. Thêm
 DELIMITER //
+
 CREATE PROCEDURE AddChiTietPhieuXuat(
     IN p_MaPX INT,
     IN p_MaThietBi VARCHAR(255),
-    IN p_SoLuong INT,
-    IN p_DonGia INT
+    IN p_SoLuong INT
 )
 BEGIN
-    INSERT INTO ChiTietPhieuXuat (MaPX, MaThietBi, SoLuong, DonGia) 
-    VALUES (p_MaPX, p_MaThietBi, p_SoLuong, p_DonGia);
+    DECLARE v_GiaThanh DECIMAL(10, 2);
+
+    -- Kiểm tra số lượng có đủ trong bảng ThietBi không
+    IF (SELECT SoLuong FROM ThietBi WHERE MaThietBi = p_MaThietBi) < p_SoLuong THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số lượng thiết bị không đủ để xuất';
+    ELSE
+        -- Lấy đơn giá của thiết bị từ bảng ThietBi
+        SELECT GiaThanh INTO v_GiaThanh
+        FROM ThietBi
+        WHERE MaThietBi = p_MaThietBi;
+
+        -- Thêm chi tiết phiếu xuất mới và tính tổng đơn giá
+        INSERT INTO ChiTietPhieuXuat (MaPX, MaThietBi, SoLuong, DonGia)
+        VALUES (p_MaPX, p_MaThietBi, p_SoLuong, p_SoLuong * v_GiaThanh);
+
+        -- Cập nhật số lượng thiết bị trong bảng ThietBi
+        UPDATE ThietBi
+        SET SoLuong = SoLuong - p_SoLuong
+        WHERE MaThietBi = p_MaThietBi;
+    END IF;
 END //
+
 DELIMITER ;
 
 DROP PROCEDURE IF EXISTS AddChiTietPhieuXuat;
@@ -1568,6 +1649,12 @@ BEGIN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
     END IF;
+    
+    -- Kiểm tra số lượng không được âm
+    IF NEW.SoLuong < 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Số lượng không được âm';
+    END IF;
 
     -- Kiểm tra mã phiếu xuất có tồn tại không
     IF NOT EXISTS (SELECT 1 FROM PhieuXuat WHERE MaPX = NEW.MaPX) THEN
@@ -1586,20 +1673,60 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS BeforeUpdateChiTietPhieuXuat;
 -- 4. Sửa
 DELIMITER //
-CREATE PROCEDURE UpdateChiTietPhieuXuat(
-    IN p_MaPX INT,
-    IN p_MaThietBi VARCHAR(255),
-    IN p_SoLuong INT,
-    IN p_DonGia INT
-)
-BEGIN
-    UPDATE ChiTietPhieuXuat
-    SET SoLuong = p_SoLuong, DonGia = p_DonGia
-    WHERE MaPX = p_MaPX AND MaThietBi = p_MaThietBi;
-END //
+
+CREATE PROCEDURE UpdateChiTietPhieuXuat(  
+    IN p_MaPX INT,  
+    IN p_MaThietBi VARCHAR(255),  
+    IN p_SoLuong INT  
+)  
+BEGIN  
+    DECLARE v_OLD_SoLuong INT;  
+    DECLARE v_GiaThanh INT;  
+    DECLARE v_CungCapSoLuong INT;  -- Biến chứa số lượng thiết bị hiện có  
+
+    -- Kiểm tra mã phiếu xuất và mã thiết bị có tồn tại hay không  
+    IF NOT EXISTS (SELECT 1 FROM ChiTietPhieuXuat WHERE MaPX = p_MaPX AND MaThietBi = p_MaThietBi) THEN  
+        SIGNAL SQLSTATE '45000'  
+        SET MESSAGE_TEXT = 'Chi tiết phiếu xuất không tồn tại';  
+    END IF;  
+
+    -- Lấy đơn giá của thiết bị từ bảng ThietBi  
+    SELECT GiaThanh INTO v_GiaThanh  
+    FROM ThietBi  
+    WHERE MaThietBi = p_MaThietBi;  
+
+    -- Lấy số lượng cũ trước khi cập nhật  
+    SELECT SoLuong INTO v_OLD_SoLuong  
+    FROM ChiTietPhieuXuat  
+    WHERE MaPX = p_MaPX AND MaThietBi = p_MaThietBi;  
+
+    -- Lấy số lượng thiết bị hiện có  
+    SELECT SoLuong INTO v_CungCapSoLuong  
+    FROM ThietBi  
+    WHERE MaThietBi = p_MaThietBi;  
+
+    -- Kiểm tra xem số lượng yêu cầu có vượt quá số lượng thiết bị hiện có không  
+    IF p_SoLuong > (v_CungCapSoLuong + v_OLD_SoLuong) THEN  
+        SIGNAL SQLSTATE '45000'  
+        SET MESSAGE_TEXT = 'Số lượng yêu cầu vượt quá số lượng thiết bị hiện có.';  
+    END IF;  
+
+    -- Cập nhật lại số lượng và đơn giá trong bảng ChiTietPhieuXuat  
+    UPDATE ChiTietPhieuXuat  
+    SET SoLuong = p_SoLuong,  
+        DonGia = p_SoLuong * v_GiaThanh  
+    WHERE MaPX = p_MaPX AND MaThietBi = p_MaThietBi;  
+
+    -- Cập nhật lại số lượng trong bảng ThietBi
+    -- Tính toán số lượng mới: cộng lại số lượng cũ và trừ đi số lượng mới
+    UPDATE ThietBi  
+    SET SoLuong = SoLuong + (v_OLD_SoLuong - p_SoLuong)  
+    WHERE MaThietBi = p_MaThietBi;  
+END //  
+
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS UpdateChiTietPhieuXuat;
+DROP PROCEDURE IF EXISTS UpdateChiTietPhieuXuat;  
 
 -- 5. Kiểm tra xóa
 DELIMITER //
@@ -1644,3 +1771,6 @@ BEGIN
     SELECT * FROM ChiTietPhieuXuat WHERE MaPX = p_MaPX;
 END //
 DELIMITER ;
+
+ALTER TABLE ThietBi
+ADD COLUMN SoLuong INT DEFAULT 0;
