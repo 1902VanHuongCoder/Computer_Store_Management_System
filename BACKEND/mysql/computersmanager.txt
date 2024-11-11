@@ -1316,6 +1316,7 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS UpdateChiTietPhieuNhap;
 -- 5. Kiểm tra xóa
 DELIMITER //
 CREATE TRIGGER BeforeDeleteChiTietPhieuNhap

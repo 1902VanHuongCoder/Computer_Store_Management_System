@@ -42,11 +42,7 @@ module.exports = {
   updateChiTietPhieuNhap: (req, res) => {
     const { MaPN, MaThietBi } = req.params;
     const data = req.body;
-    if (!data.MaPN) {
-      return res.status(400).json({ error: "Mã phiếu nhập không được để trống" });
-    } else if (!data.MaThietBi) {
-      return res.status(400).json({ error: "Mã thiết bị không được để trống" });
-    } else if (!data.SoLuong) {
+    if (!data.SoLuong) {
       return res.status(400).json({ error: "Số lượng không được để trống" });
     } else if (!data.DonGia) {
       return res.status(400).json({ error: "Đơn giá không được để trống" });

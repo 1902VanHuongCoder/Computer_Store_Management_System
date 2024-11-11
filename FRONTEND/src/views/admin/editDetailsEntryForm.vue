@@ -81,7 +81,7 @@ onMounted(() => {
                                                 <div class="md:col-span-5">
                                                     <label for="idEntry" class="font-semibold text-[16px]">Mã phiếu
                                                         nhập</label>
-                                                    <input v-model="idEntry" type="text" name="idEntry" id="idEntry"
+                                                    <input v-model="idEntry" readonly type="text" name="idEntry" id="idEntry"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập mã phiếu nhập ..." />
                                                 </div>
@@ -89,7 +89,7 @@ onMounted(() => {
                                                 <div class="md:col-span-5">
                                                     <label for="idProduct" class="font-semibold text-[16px]">Mã thiết
                                                         bị</label>
-                                                    <input v-model="idProduct" type="text" name="idProduct"
+                                                    <input v-model="idProduct" readonly type="text" name="idProduct"
                                                         id="idProduct"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập mã thiết bị ..." />
