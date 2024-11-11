@@ -21,6 +21,8 @@ import EditTypeDevice from "../views/admin/editTypeDevice.vue";
 import EditCustomers from "../views/admin/editCustomers.vue";
 import StaffList from "../views/admin/staffList.vue";
 import EditStaffInfo from "@/views/admin/editStaffInfo.vue";
+import EditBillInfo from "../views/admin/editBillInfo.vue";
+import EditDetailsBillInfo from "../views/admin/editDetailsBillInfo.vue";
 
 const routes = [
   {
@@ -96,9 +98,21 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/editBillInfo/:maPX",
+    name: "Edit Bill Info",
+    component: EditBillInfo,
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/detailsBillInfo",
     name: "Details Bill Info",
     component: DetailsBillInfo,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/ediDetailsBillInfo/:maPX/:maThietBi",
+    name: "Edit Detail Bill Info",
+    component: EditDetailsBillInfo,
     meta: { requiresAuth: true },
   },
   {

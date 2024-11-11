@@ -52,8 +52,8 @@ const deleteDetailEntryForm = async (maPN, maThietBi) => {
     try {
         const response = await axios.delete(`http://localhost:3000/api/chitietphieunhap/${maPN}/${maThietBi}`);
 
-        entryForms.value = entryForms.value.filter(entryForm =>
-            !(entryForm.MaPN === maPN && entryForm.MaThietBi === maThietBi)
+        detailEntryForms.value = detailEntryForms.value.filter(detailEntryForm =>
+            !(detailEntryForm.MaPN === maPN && detailEntryForm.MaThietBi === maThietBi)
         );
 
         showMessage('Chi tiết phiếu nhập đã được xóa thành công!', 'success');
@@ -188,11 +188,11 @@ onMounted(() => {
                                         <td class="flex justify-center items-center gap-2 px-7 py-7 flex-col">
                                             <a :href="`/editDetailsEntryForm/${detailEntryForm.MaPN}/${detailEntryForm.MaThietBi}`"
                                                 class="inline-block bg-blue-primary text-white font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Sửa
-                                                phiếu nhập</a>
-                                            <form @submit.prevent="deleteDetailEntryForm()">
+                                                chi tiết phiếu nhập</a>
+                                            <form @submit.prevent="deleteDetailEntryForm(detailEntryForm.MaPN, detailEntryForm.MaThietBi)">
                                                 <button type="submit"
                                                     class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa
-                                                    phiếu nhập</button>
+                                                    chi tiết phiếu nhập</button>
                                             </form>
                                         </td>
                                     </tr>

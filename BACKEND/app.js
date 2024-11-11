@@ -10,6 +10,7 @@ const khachhangRoutes = require('./routes/khachhangRoutes');
 const thietbiRoutes = require('./routes/thietbiRoutes');
 const phieunhapRoutes = require('./routes/phieunhapRoutes');
 const chitietphieunhapRoutes = require('./routes/chitietphieunhapRoutes');
+const phieuxuatRoutes = require('./routes/phieuxuatRoutes');
 
 const app = express();
 app.use(cors());
@@ -17,6 +18,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use('/api/chitietphieuxuat', chitietphieuxuatRoutes);
+app.use('/api/phieuxuat', phieuxuatRoutes);
 app.use('/api/nhanvien', nhanvienRoutes);
 app.use('/api/nhasanxuat', nhasanxuatRoutes);
 app.use('/api/nhacungcap', nhacungcapRoutes);

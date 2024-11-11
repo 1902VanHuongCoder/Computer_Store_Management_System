@@ -1,51 +1,67 @@
-const ChiTietPhieuXuat = require('../models/chitietphieuxuatModel');
+const ChiTietPhieuXuat = require("../models/chitietphieuxuatModel");
 
-exports.getAll = (req, res) => {
-    ChiTietPhieuXuat.getAll((err, results) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json(results);
-        }
+module.exports = {
+  getAllChiTietPhieuXuat: (req, res) => {
+    ChiTietPhieuXuat.getAll((err, result) => {
+      if (err) {
+        return res.status(500).json({ error: "Lỗi khi lấy danh sách chi tiết phiếu xuất" });
+      }
+      res.json(result);
     });
-};
+  },
 
-exports.getById = (req, res) => {
-    ChiTietPhieuXuat.getById(req.params.MaPX, req.params.MaThietBi, (err, results) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json(results);
-        }
+  getChiTietPhieuXuatById: (req, res) => {
+    const { MaPX } = req.params;
+    ChiTietPhieuXuat.getByMaPX(MaPX, (err, result) => {
+      if (err) {
+        return res.status(500).json({ error: "Lỗi khi lấy chi tiết phiếu xuất" });
+      }
+      res.json(result);
     });
-};
+  },
 
-exports.create = (req, res) => {
-    ChiTietPhieuXuat.create(req.body, (err, results) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json(results);
-        }
+  addChiTietPhieuXuat: (req, res) => {
+    const data = req.body;
+    if (!data.MaThietBi) {
+      return res.status(400).json({ error: "Mã thiết bị không được để trống" });
+    } else if (!data.MaPX) {
+      return res.status(400).json({ error: "Mã hóa đơn không được để trống" });
+    } else if (!data.SoLuong) {
+      return res.status(400).json({ error: "Số lượng không được để trống" });
+    } else if (!data.DonGia) {
+      return res.status(400).json({ error: "Đơn giá không được để trống" });
+    }
+    ChiTietPhieuXuat.create(data, (err, result) => {
+      if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      res.status(201).json({ message: "Thêm chi tiết phiếu xuất thành công", result });
     });
-};
+  },
 
-exports.update = (req, res) => {
-    ChiTietPhieuXuat.update(req.params.MaPX, req.params.MaThietBi, req.body, (err, results) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json(results);
-        }
+  updateChiTietPhieuXuat: (req, res) => {
+    const { MaPX, MaThietBi } = req.params;
+    const data = req.body;
+    if (!data.SoLuong) {
+      return res.status(400).json({ error: "Số lượng không được để trống" });
+    } else if (!data.DonGia) {
+      return res.status(400).json({ error: "Đơn giá không được để trống" });
+    }
+    ChiTietPhieuXuat.update(MaPX, MaThietBi, data, (err, result) => {
+      if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      res.json({ message: "Cập nhật chi tiết phiếu xuất thành công", result });
     });
-};
+  },
 
-exports.delete = (req, res) => {
-    ChiTietPhieuXuat.delete(req.params.MaPX, req.params.MaThietBi, (err, results) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            res.json(results);
-        }
+  deleteChiTietPhieuXuat: (req, res) => {
+    const { MaPX, MaThietBi } = req.params;
+    ChiTietPhieuXuat.delete(MaPX, MaThietBi, (err, result) => {
+      if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      res.json({ message: "Xóa chi tiết phiếu xuất thành công", result });
     });
+  },
 };

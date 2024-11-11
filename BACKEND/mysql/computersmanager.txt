@@ -1261,7 +1261,7 @@ CREATE PROCEDURE AddChiTietPhieuNhap(
     IN p_MaPN INT,
     IN p_MaThietBi VARCHAR(255),
     IN p_SoLuong INT,
-    IN p_DonGia DECIMAL(10, 2)
+    IN p_DonGia INT
 )
 BEGIN
     INSERT INTO ChiTietPhieuNhap (MaPN, MaThietBi, SoLuong, DonGia) 
@@ -1269,6 +1269,7 @@ BEGIN
 END //
 DELIMITER ;
 
+DROP PROCEDURE IF EXISTS AddChiTietPhieuNhap;
 -- 3. Kiểm tra sửa
 DELIMITER //
 CREATE TRIGGER BeforeUpdateChiTietPhieuNhap
@@ -1307,7 +1308,7 @@ CREATE PROCEDURE UpdateChiTietPhieuNhap(
     IN p_MaPN INT,
     IN p_MaThietBi VARCHAR(255),
     IN p_SoLuong INT,
-    IN p_DonGia DECIMAL(10, 2)
+    IN p_DonGia INT
 )
 BEGIN
     UPDATE ChiTietPhieuNhap
@@ -1355,5 +1356,291 @@ DELIMITER //
 CREATE PROCEDURE GetChiTietPhieuNhapByMaPN(IN p_MaPN INT)
 BEGIN
     SELECT * FROM ChiTietPhieuNhap WHERE MaPN = p_MaPN;
+END //
+DELIMITER ;
+
+-- PHIẾU XUẤT ----------------
+-- 1. Kiểm tra trước khi thêm
+DELIMITER //
+CREATE TRIGGER BeforeInsertPhieuXuat
+BEFORE INSERT ON PhieuXuat
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra mã nhân viên không được để trống
+    IF NEW.MaNhanVien IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhân viên không được để trống';
+    END IF;
+
+    -- Kiểm tra mã khách hàng không được để trống
+    IF NEW.MaKhachHang IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã khách hàng không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhân viên có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhanVien WHERE MaNhanVien = NEW.MaNhanVien) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhân viên không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã khách hàng có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM KhachHang WHERE MaKhachHang = NEW.MaKhachHang) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã khách hàng không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+-- 2. Thêm
+DELIMITER //
+CREATE PROCEDURE AddPhieuXuat(
+    IN p_MaNhanVien VARCHAR(255),
+    IN p_MaKhachHang INT
+)
+BEGIN
+    DECLARE v_NgayXuat DATE;
+
+    -- Lấy ngày hiện tại
+    SET v_NgayXuat = CURDATE();
+
+    INSERT INTO PhieuXuat (MaNhanVien, MaKhachHang, NgayXuat) 
+    VALUES (p_MaNhanVien, p_MaKhachHang, v_NgayXuat);
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS AddPhieuXuat;
+
+-- 3. Kiểm tra khi sửa
+DELIMITER //
+CREATE TRIGGER BeforeUpdatePhieuXuat
+BEFORE UPDATE ON PhieuXuat
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra mã nhân viên không được để trống
+    IF NEW.MaNhanVien IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhân viên không được để trống';
+    END IF;
+
+    -- Kiểm tra mã khách hàng không được để trống
+    IF NEW.MaKhachHang IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã khách hàng không được để trống';
+    END IF;
+
+    -- Kiểm tra mã nhân viên có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM NhanVien WHERE MaNhanVien = NEW.MaNhanVien) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã nhân viên không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã khách hàng có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM KhachHang WHERE MaKhachHang = NEW.MaKhachHang) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã khách hàng không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+-- 4. Sửa
+DELIMITER //
+CREATE PROCEDURE UpdatePhieuXuat(
+    IN p_MaPX INT,
+    IN p_MaNhanVien VARCHAR(255),
+    IN p_MaKhachHang INT
+)
+BEGIN
+    UPDATE PhieuXuat
+    SET MaNhanVien = p_MaNhanVien, MaKhachHang = p_MaKhachHang
+    WHERE MaPX = p_MaPX;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS UpdatePhieuXuat;
+
+-- 5. Kiểm tra khi xóa
+DELIMITER //
+CREATE TRIGGER BeforeDeletePhieuXuat
+BEFORE DELETE ON PhieuXuat
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem phiếu xuất có tồn tại trong bảng ChiTietPhieuXuat không
+    IF EXISTS (SELECT 1 FROM ChiTietPhieuXuat WHERE MaPX = OLD.MaPX) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Không thể xóa hóa đơn này vì đã có chi tiết phiếu xuất liên quan';
+    END IF;
+END //
+DELIMITER ;
+
+-- 6. Xóa
+DELIMITER //
+CREATE PROCEDURE DeletePhieuXuat(
+    IN p_MaPX INT
+)
+BEGIN
+    DELETE FROM PhieuXuat WHERE MaPX = p_MaPX;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS DeletePhieuXuat;
+
+-- 7. Lấy all
+DELIMITER //
+CREATE PROCEDURE GetAllPhieuXuat()
+BEGIN
+    SELECT * FROM PhieuXuat;
+END //
+DELIMITER ;
+
+-- 8. Lấy theo mã
+DELIMITER //
+CREATE PROCEDURE GetPhieuXuatById(IN p_MaPX INT)
+BEGIN
+    SELECT * FROM PhieuXuat WHERE MaPX = p_MaPX;
+END //
+DELIMITER ;
+
+-- CHI TIẾT PHIẾU XUẤT --------------
+-- 1. Kiểm tra thêm
+DELIMITER //
+CREATE TRIGGER BeforeInsertChiTietPhieuXuat
+BEFORE INSERT ON ChiTietPhieuXuat
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra mã phiếu xuất không được để trống
+    IF NEW.MaPX IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã hóa đơn không được để trống';
+    END IF;
+
+    -- Kiểm tra mã thiết bị không được để trống
+    IF NEW.MaThietBi IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
+    END IF;
+
+    -- Kiểm tra mã phiếu xuất có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM PhieuXuat WHERE MaPX = NEW.MaPX) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã hóa đơn không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã thiết bị có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM ThietBi WHERE MaThietBi = NEW.MaThietBi) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã thiết bị không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS BeforeInsertChiTietPhieuXuat;
+-- 2. Thêm
+DELIMITER //
+CREATE PROCEDURE AddChiTietPhieuXuat(
+    IN p_MaPX INT,
+    IN p_MaThietBi VARCHAR(255),
+    IN p_SoLuong INT,
+    IN p_DonGia INT
+)
+BEGIN
+    INSERT INTO ChiTietPhieuXuat (MaPX, MaThietBi, SoLuong, DonGia) 
+    VALUES (p_MaPX, p_MaThietBi, p_SoLuong, p_DonGia);
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS AddChiTietPhieuXuat;
+
+-- 3. Kiểm tra sửa
+DELIMITER //
+CREATE TRIGGER BeforeUpdateChiTietPhieuXuat
+BEFORE UPDATE ON ChiTietPhieuXuat
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra mã phiếu xuất không được để trống
+    IF NEW.MaPX IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã hóa đơn không được để trống';
+    END IF;
+
+    -- Kiểm tra mã thiết bị không được để trống
+    IF NEW.MaThietBi IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
+    END IF;
+
+    -- Kiểm tra mã phiếu xuất có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM PhieuXuat WHERE MaPX = NEW.MaPX) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã hóa đơn không tồn tại';
+    END IF;
+
+    -- Kiểm tra mã thiết bị có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM ThietBi WHERE MaThietBi = NEW.MaThietBi) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Mã thiết bị không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS BeforeUpdateChiTietPhieuXuat;
+-- 4. Sửa
+DELIMITER //
+CREATE PROCEDURE UpdateChiTietPhieuXuat(
+    IN p_MaPX INT,
+    IN p_MaThietBi VARCHAR(255),
+    IN p_SoLuong INT,
+    IN p_DonGia INT
+)
+BEGIN
+    UPDATE ChiTietPhieuXuat
+    SET SoLuong = p_SoLuong, DonGia = p_DonGia
+    WHERE MaPX = p_MaPX AND MaThietBi = p_MaThietBi;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS UpdateChiTietPhieuXuat;
+
+-- 5. Kiểm tra xóa
+DELIMITER //
+CREATE TRIGGER BeforeDeleteChiTietPhieuXuat
+BEFORE DELETE ON ChiTietPhieuXuat
+FOR EACH ROW
+BEGIN
+    -- Kiểm tra xem chi tiết phiếu xuất có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM ChiTietPhieuXuat WHERE MaPX = OLD.MaPX AND MaThietBi = OLD.MaThietBi) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Chi tiết hóa đơn không tồn tại';
+    END IF;
+END //
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS BeforeDeleteChiTietPhieuXuat;
+-- 6. Xóa
+DELIMITER //
+CREATE PROCEDURE DeleteChiTietPhieuXuat(
+    IN p_MaPX INT,
+    IN p_MaThietBi VARCHAR(255)
+)
+BEGIN
+    DELETE FROM ChiTietPhieuXuat WHERE MaPX = p_MaPX AND MaThietBi = p_MaThietBi;
+END //
+DELIMITER ;
+
+DROP PROCEDURE IF EXISTS DeleteChiTietPhieuXuat;
+
+-- 7. Lấy all
+DELIMITER //
+CREATE PROCEDURE GetAllChiTietPhieuXuat()
+BEGIN
+    SELECT * FROM ChiTietPhieuXuat;
+END //
+DELIMITER ;
+
+-- 8. Lấy mã
+DELIMITER //
+CREATE PROCEDURE GetChiTietPhieuXuatByMaPX(IN p_MaPX INT)
+BEGIN
+    SELECT * FROM ChiTietPhieuXuat WHERE MaPX = p_MaPX;
 END //
 DELIMITER ;
