@@ -131,7 +131,7 @@ onMounted(() => {
                     <div class="relative flex justify-center flex-1 gap-4 max-w-xl">
                         <input type="text" v-model="searchQuery"
                             class="items-center w-full p-3 bg-white border-2 border-gray-400 text-[14px] font-semibold tracking-wider text-black rounded-lg focus:outline-none"
-                            placeholder="Tìm kiếm loại thiết bị ..." />
+                            placeholder="Tìm kiếm phiếu nhập ..." />
                         <i class="fa-solid fa-magnifying-glass absolute top-3 right-4 font-bold text-[25px] text-blue-primary"></i>
                     </div>
                     <div class="h-full bg-white rounded-xl">

@@ -9,7 +9,6 @@ const detailBillInfo = ref([]);
 const idProduct = ref("");
 const idBill = ref("");
 const quantity = ref("");
-const price = ref("");
 const searchQuery = ref("");
 const notification = ref({ message: '', type: '' });
 const showMessage = (message, type) => {
@@ -20,17 +19,16 @@ const showMessage = (message, type) => {
 };  
 
 const addDetailBillInfo = async () => {
-
     try {
         const newDetailBillInfo = {
             MaThietBi: idProduct.value,
             MaPX: idBill.value,
-            DonGia: price.value,
             SoLuong: quantity.value
         };
 
         const response = await axios.post("http://localhost:3000/api/chitietphieuxuat", newDetailBillInfo);
-
+        const confirmDelete = confirm("Bạn có chắc chắn về thông tin của chi tiết hóa đơn này chưa?");
+        if (!confirmDelete) return;
         showMessage('Thêm chi tiết hóa đơn đã được thêm thành công!', 'success');
         await getDetailBillInfo();
     } catch (error) {
@@ -124,13 +122,6 @@ onMounted(() => {
                                                         placeholder="Nhập số lượng ..." />
                                                 </div>
 
-                                                <div class="md:col-span-5">
-                                                    <label for="price" class="font-semibold text-[16px]">Đơn giá</label>
-                                                    <input type="text" v-model="price" name="price" id="price"
-                                                        class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
-                                                        placeholder="1-xxx-xxx ..." />
-                                                </div>
-
                                                 <div class="md:col-span-5 text-right">
                                                     <div class="inline-flex items-end">
                                                         <button type="submit"
@@ -149,7 +140,7 @@ onMounted(() => {
                     <div class="relative flex justify-center flex-1 gap-4 max-w-xl">
                         <input type="text" v-model="searchQuery"
                             class="items-center w-full p-3 bg-white border-2 border-gray-400 text-[14px] font-semibold tracking-wider text-black rounded-lg focus:outline-none"
-                            placeholder="Tìm kiếm loại thiết bị ..." />
+                            placeholder="Tìm kiếm chi tiết hóa đơn ..." />
                         <i
                             class="fa-solid fa-magnifying-glass absolute top-3 right-4 font-bold text-[25px] text-blue-primary"></i>
                     </div>
@@ -161,9 +152,9 @@ onMounted(() => {
                             <table class="w-full border-collapse whitespace-nowrap text-center text-sm text-gray-500">
                                 <thead class="">
                                     <tr>
-                                        <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã thiết bị</th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã hóa đơn
                                         </th>
+                                        <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã thiết bị</th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Số lượng</th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Đơn giá</th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Điều chỉnh</th>
@@ -171,8 +162,8 @@ onMounted(() => {
                                 </thead>
                                 <tbody class="w-full">
                                     <tr class="border-t border-slate-500" v-for="detailBill in filteredDetailBillInfo" :key="detailBill.MaPX">
+                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailBill.MaPX }}</th>                                       
                                         <th class="px-6 py-4 font-medium text-gray-900">{{ detailBill.MaThietBi }}</th>
-                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailBill.MaPX }}</th>
                                         <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
                                             detailBill.SoLuong
                                             }}</td>
@@ -180,9 +171,6 @@ onMounted(() => {
                                             formatCurrency(detailBill.DonGia) }}
                                         </td>
                                         <td class="flex justify-center items-center gap-2 px-7 py-7 flex-col">
-                                            <a :href="`/ediDetailsBillInfo/${detailBill.MaPX}/${detailBill.MaThietBi}`"
-                                                class="inline-block bg-blue-primary text-white font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Sửa
-                                                chi tiết hóa đơn</a>
                                             <form @submit.prevent="deleteDetailBillInfo(detailBill.MaPX, detailBill.MaThietBi)">
                                                 <button type="submit"
                                                     class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa

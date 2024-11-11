@@ -8,7 +8,6 @@ const detailEntryForms = ref([]);
 const idEntry = ref("");
 const idProduct = ref("");
 const quantity = ref("");
-const price = ref("");
 const searchQuery = ref("");
 const notification = ref({ message: '', type: '' });
 const showMessage = (message, type) => {
@@ -24,7 +23,6 @@ const addDetailEntryForm = async () => {
         const newDetailEntryForm = {
             MaThietBi: idProduct.value,
             MaPN: idEntry.value,
-            DonGia: price.value,
             SoLuong: quantity.value
         };
 
@@ -129,13 +127,6 @@ onMounted(() => {
                                                         placeholder="Nhập số lượng ..." />
                                                 </div>
 
-                                                <div class="md:col-span-5">
-                                                    <label for="price" class="font-semibold text-[16px]">Đơn giá</label>
-                                                    <input v-model="price" type="text" name="price" id="price"
-                                                        class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
-                                                        placeholder="1-xxx-xxx ..." />
-                                                </div>
-
                                                 <div class="md:col-span-5 text-right">
                                                     <div class="inline-flex items-end">
                                                         <button type="submit"
@@ -153,7 +144,7 @@ onMounted(() => {
                     <div class="relative flex justify-center flex-1 gap-4 max-w-xl">
                         <input type="text" v-model="searchQuery"
                             class="items-center w-full p-3 bg-white border-2 border-gray-400 text-[14px] font-semibold tracking-wider text-black rounded-lg focus:outline-none"
-                            placeholder="Tìm kiếm loại thiết bị ..." />
+                            placeholder="Tìm kiếm chi tiết phiếu nhập ..." />
                         <i
                             class="fa-solid fa-magnifying-glass absolute top-3 right-4 font-bold text-[25px] text-blue-primary"></i>
                     </div>
@@ -165,8 +156,8 @@ onMounted(() => {
                             <table class="w-full border-collapse whitespace-nowrap text-center text-sm text-gray-500">
                                 <thead class="">
                                     <tr>
-                                        <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã thiết bị</th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã phiếu nhập</th>
+                                        <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã thiết bị</th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Số lượng</th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Đơn giá</th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Điều chỉnh</th>
@@ -175,10 +166,10 @@ onMounted(() => {
                                 <tbody class="w-full">
                                     <tr class="border-t border-slate-500"
                                         v-for="detailEntryForm in filteredDetailEntryForm" :key="detailEntryForm.MaPN">
-                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailEntryForm.MaThietBi }}
-                                        </th>
                                         <th class="px-6 py-4 font-medium text-gray-900">{{ detailEntryForm.MaPN
                                             }}</th>
+                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailEntryForm.MaThietBi }}
+                                        </th>
                                         <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
                                             detailEntryForm.SoLuong
                                         }}</td>

@@ -28,8 +28,6 @@ module.exports = {
       return res.status(400).json({ error: "Mã hóa đơn không được để trống" });
     } else if (!data.SoLuong) {
       return res.status(400).json({ error: "Số lượng không được để trống" });
-    } else if (!data.DonGia) {
-      return res.status(400).json({ error: "Đơn giá không được để trống" });
     }
     ChiTietPhieuXuat.create(data, (err, result) => {
       if (err) {
@@ -44,8 +42,6 @@ module.exports = {
     const data = req.body;
     if (!data.SoLuong) {
       return res.status(400).json({ error: "Số lượng không được để trống" });
-    } else if (!data.DonGia) {
-      return res.status(400).json({ error: "Đơn giá không được để trống" });
     }
     ChiTietPhieuXuat.update(MaPX, MaThietBi, data, (err, result) => {
       if (err) {

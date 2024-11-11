@@ -98,7 +98,7 @@ onMounted(() => {
                                                 enctype="multipart/form-data">
 
                                                 <div class="md:col-span-5">
-                                                    <label for="idCustomer" class="font-semibold text-[16px]">Mã khác hàng</label>
+                                                    <label for="idCustomer" class="font-semibold text-[16px]">Mã khách hàng</label>
                                                     <input type="text" v-model="idCustomer" name="idCustomer" id="idCustomer"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập mã khách hàng ..." />
@@ -145,7 +145,7 @@ onMounted(() => {
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã khách hàng
                                         </th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã nhân viên</th>
-                                        <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Ngày nhập</th>
+                                        <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Ngày xuất</th>
                                         <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Điều chỉnh</th>
                                     </tr>
                                 </thead>

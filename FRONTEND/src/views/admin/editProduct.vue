@@ -89,7 +89,7 @@ onMounted(() => {
                                     <label for="idNSX"
                                         class="font-bold mb-1 block text-base text-gray-700 after:ml-0.5 after:text-red-500 after:content-['*']">Mã
                                         nhà sản xuất</label>
-                                    <input v-model="idNSX" name="idNSX" autofocus type="text" id="idNSX"
+                                    <input v-model="idNSX" name="idNSX" readonly autofocus type="text" id="idNSX"
                                         class="outline-0 p-3 block w-full rounded-md border shadow-md focus:border-blue-secondary focus:ring focus:ring-blue-secondary focus:ring-opacity-50 disabled:cursor-not-allowed"
                                         placeholder="Nhập mã NSX ..." />
                                 </div>
@@ -99,7 +99,7 @@ onMounted(() => {
                                     <label for="idSupplier"
                                         class="font-bold mb-1 block text-base text-gray-700 after:ml-0.5 after:text-red-500 after:content-['*']">Mã
                                         nhà cung cấp</label>
-                                    <input v-model="idSupplier" name="idSupplier" autofocus type="text" id="idSupplier"
+                                    <input v-model="idSupplier" name="idSupplier" readonly autofocus type="text" id="idSupplier"
                                         class="outline-0 p-3 block w-full rounded-md border shadow-md focus:border-blue-secondary focus:ring focus:ring-blue-secondary focus:ring-opacity-50 disabled:cursor-not-allowed"
                                         placeholder="Nhập mã nhà cung cấp ..." />
                                 </div>
@@ -109,7 +109,7 @@ onMounted(() => {
                                     <label for="idType"
                                         class="font-bold mb-1 block text-base text-gray-700 after:ml-0.5 after:text-red-500 after:content-['*']">Mã
                                         loại</label>
-                                    <input v-model="idType" name="idType" autofocus type="text" id="idType"
+                                    <input v-model="idType" name="idType" readonly autofocus type="text" id="idType"
                                         class="outline-0 p-3 block w-full rounded-md border shadow-md focus:border-blue-secondary focus:ring focus:ring-blue-secondary focus:ring-opacity-50 disabled:cursor-not-allowed"
                                         placeholder="Nhập mã loại ..." />
                                 </div>

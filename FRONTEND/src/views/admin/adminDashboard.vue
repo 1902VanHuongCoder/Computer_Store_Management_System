@@ -82,6 +82,7 @@ onMounted(() => {
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã thiết bị</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Tên thiết bị</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Giá thành</th>
+                                    <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Số lượng</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã NSX</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã Loại</th>
                                     <th scope="col" class="px-6 py-4 font-semibold text-gray-900">Mã nhà cung cấp</th>
@@ -99,6 +100,8 @@ onMounted(() => {
                                     <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
                                         formatCurrency(device.GiaThanh)
                                         }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
+                                        device.SoLuong }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
                                         device.MaNSX }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{

@@ -18,9 +18,9 @@ const ChiTietPhieuNhap = {
   },
 
   create: (data, callback) => {
-    const { MaPN, MaThietBi, SoLuong, DonGia } = data;
-    const sql = "CALL AddChiTietPhieuNhap(?, ?, ?, ?)";
-    db.query(sql, [MaPN, MaThietBi, SoLuong, DonGia], (err, results) => {
+    const { MaPN, MaThietBi, SoLuong } = data;
+    const sql = "CALL AddChiTietPhieuNhap(?, ?, ?)";
+    db.query(sql, [MaPN, MaThietBi, SoLuong], (err, results) => {
       if (err) {
         if (err.code === "45000") {
           return callback(new Error(err.sqlMessage));
@@ -32,9 +32,9 @@ const ChiTietPhieuNhap = {
   },
 
   update: (MaPN, MaThietBi, data, callback) => {
-    const { SoLuong, DonGia } = data;
-    const sql = "CALL UpdateChiTietPhieuNhap(?, ?, ?, ?)";
-    db.query(sql, [MaPN, MaThietBi, SoLuong, DonGia], (err, results) => {
+    const { SoLuong} = data;
+    const sql = "CALL UpdateChiTietPhieuNhap(?, ?, ?)";
+    db.query(sql, [MaPN, MaThietBi, SoLuong], (err, results) => {
       if (err) {
         if (err.code === "45000") {
           return callback(new Error(err.sqlMessage));

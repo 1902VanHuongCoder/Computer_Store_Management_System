@@ -9,7 +9,6 @@ const router = useRouter();
 const idProduct = ref("");
 const idBill = ref("");
 const quantity = ref("");
-const price = ref("");
 const notification = ref({ message: '', type: '' });
 const showMessage = (message, type) => {
     notification.value = { message, type };
@@ -23,7 +22,6 @@ const getChiTietPhieuXuatByID = async (id) => {
         idBill.value = response.data[0].MaPX;
         idProduct.value = response.data[0].MaThietBi;
         quantity.value = response.data[0].SoLuong;
-        price.value = response.data[0].DonGia;
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu:', error);
     }
@@ -34,8 +32,7 @@ const editChiTietPhieuXuat = async () => {
         const updateChiTietPhieuXuat = {
             MaPX: idBill.value,
             MaThietBi: idProduct.value,
-            SoLuong: quantity.value,
-            DonGia: price.value,
+            SoLuong: quantity.value
         };
         const response = await axios.put(`http://localhost:3000/api/chitietphieuxuat/${idBill.value}/${idProduct.value}`, updateChiTietPhieuXuat);
         showMessage('Chi tiết hóa đơn đã chỉnh sửa thành công!', 'success');
@@ -101,13 +98,6 @@ onMounted(() => {
                                                         id="quantity"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập số lượng ..." />
-                                                </div>
-
-                                                <div class="md:col-span-5">
-                                                    <label for="price" class="font-semibold text-[16px]">Đơn giá</label>
-                                                    <input type="text" v-model="price" name="price" id="price"
-                                                        class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
-                                                        placeholder="1-xxx-xxx ..." />
                                                 </div>
 
                                                 <div class="md:col-span-5 text-right">
