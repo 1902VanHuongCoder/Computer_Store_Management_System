@@ -35,7 +35,7 @@ const editDetailEntryForm = async () => {
             MaPN: idEntry.value,
             MaThietBi: idProduct.value,
             SoLuong: quantity.value,
-            DonGia: quantity.value,
+            DonGia: price.value,
         };
         const response = await axios.put(`http://localhost:3000/api/chitietphieunhap/${idEntry.value}/${idProduct.value}`, updateDetailEntryForm);
         showMessage('Chi tiết phiếu nhập đã chỉnh sửa thành công!', 'success');

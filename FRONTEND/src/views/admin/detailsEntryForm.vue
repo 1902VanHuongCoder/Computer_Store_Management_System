@@ -71,6 +71,12 @@ const filteredDetailEntryForm = computed(() => {
         return detailEntryForm.MaPN.toString().toLowerCase().includes(searchQuery.value.toLowerCase());
     });
 });
+
+const formatCurrency = (value) => {
+    const formattedValue = value * 1000;
+    return formattedValue.toLocaleString('vi-VN') + ' ' + 'VNĐ';
+};
+
 onMounted(() => {
     getDetailEntryForm();
 });
@@ -177,7 +183,7 @@ onMounted(() => {
                                             detailEntryForm.SoLuong
                                         }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
-                                            detailEntryForm.DonGia }}
+                                            formatCurrency(detailEntryForm.DonGia) }}
                                         </td>
                                         <td class="flex justify-center items-center gap-2 px-7 py-7 flex-col">
                                             <a :href="`/editDetailsEntryForm/${detailEntryForm.MaPN}/${detailEntryForm.MaThietBi}`"
