@@ -4,6 +4,8 @@ import axios from "axios";
 import navbar from '@/components/navbar.vue';
 import sidebar from '@/components/sidebar.vue';
 import BillInfo from "./billInfo.vue";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const detailBillInfo = ref([]);
 const idProduct = ref("");
@@ -74,6 +76,53 @@ const filteredDetailBillInfo = computed(() => {
 const formatCurrency = (value) => {
     const formattedValue = value * 1000;
     return formattedValue.toLocaleString('vi-VN') + ' ' + 'VNĐ';
+};
+
+const exportAllToPDF = async (maPX) => {
+    const doc = new jsPDF();
+    try {
+        const response = await axios.get(`http://localhost:3000/api/chitietphieuxuat/details/${maPX}`);
+        const data = response.data.result;
+
+        if (!Array.isArray(data) || data.length === 0) {
+            showMessage('Không có dữ liệu để xuất!', 'error');
+            return;
+        }
+
+        doc.setFont("Helvetica");
+
+        doc.text(`Thông tin hóa đơn - Mã: ${maPX}`, 14, 10);
+        autoTable(doc, {
+            head: [['Mã hóa đơn', 'Mã nhân viên', 'Mã khách hàng', 'Ngày xuất']],
+            body: data.map(item => [item.MaPX, item.MaNhanVien, item.MaKhachHang, item.NgayXuat]),
+            styles: {
+                font: "Helvetica",
+                fontSize: 12,
+            },
+            headStyles: {
+                fillColor: [22, 160, 133],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+            },
+        });
+
+        doc.addPage();
+        doc.text("Chi tiết hóa đơn", 14, 10);
+        autoTable(doc, {
+            head: [['Mã hóa đơn', 'Mã thiết bị', 'Số lượng', 'Đơn giá']],
+            body: data.map(item => [item.MaPX, item.MaThietBi, item.SoLuong, formatCurrency(item.DonGia)]),
+            styles: {
+                font: "Helvetica",
+                fontSize: 12,
+            },
+        });
+
+        // Lưu file PDF
+        doc.save(`phieu_xuat_${maPX}.pdf`);
+    } catch (error) {
+        console.error('Lỗi khi xuất PDF:', error);
+        showMessage('Có lỗi xảy ra khi xuất PDF!', 'error');
+    }
 };
 
 onMounted(() => {
@@ -174,6 +223,11 @@ onMounted(() => {
                                             <form @submit.prevent="deleteDetailBillInfo(detailBill.MaPX, detailBill.MaThietBi)">
                                                 <button type="submit"
                                                     class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa
+                                                    chi tiết hóa đơn</button>
+                                            </form>
+                                            <form @submit.prevent="exportAllToPDF(detailBill.MaPX)">
+                                                <button type="submit"
+                                                    class="inline-block text-white font-medium bg-blue-primary py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Xuất
                                                     chi tiết hóa đơn</button>
                                             </form>
                                         </td>

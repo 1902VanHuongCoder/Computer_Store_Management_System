@@ -7,5 +7,6 @@ router.get('/phieuxuat/:MaPX', chitietphieuxuatController.getChiTietPhieuXuatByI
 router.post('/', chitietphieuxuatController.addChiTietPhieuXuat);
 router.put('/:MaPX/:MaThietBi', chitietphieuxuatController.updateChiTietPhieuXuat);
 router.delete('/:MaPX/:MaThietBi', chitietphieuxuatController.deleteChiTietPhieuXuat);
+router.get('/details/:MaPX', chitietphieuxuatController.getPhieuXuatWithDetailsById);
 
 module.exports = router;

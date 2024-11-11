@@ -60,4 +60,18 @@ module.exports = {
       res.json({ message: "Xóa chi tiết phiếu xuất thành công", result });
     });
   },
+
+  getPhieuXuatWithDetailsById: (req, res) => {
+    console.log(req.params);
+        const { MaPX } = req.params;
+        if (!MaPX) {
+            return res.status(400).json({ error: "Mã phiếu xuất không được để trống" });
+        }
+        ChiTietPhieuXuat.getPDFId(MaPX, (err, result) => {
+            if (err) {
+                return res.status(400).json({ error: err.message });
+            }
+            res.json({ message: "In chi tiết phiếu xuất thành công", result });
+        });
+    }
 };

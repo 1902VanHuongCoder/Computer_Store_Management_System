@@ -57,6 +57,20 @@ const ChiTietPhieuXuat = {
       callback(null, results);
     });
   },
+  getPDFId: (MaPX, callback) => { // Thay đổi từ req, res sang MaPX, callback
+    const sql = `
+        SELECT px.*, cpx.*
+        FROM PhieuXuat px
+        LEFT JOIN ChiTietPhieuXuat cpx ON px.MaPX = cpx.MaPX
+        WHERE px.MaPX = ?
+    `;
+    db.query(sql, [MaPX], (err, results) => {
+        if (err) {
+            return callback(err); // Gọi callback với lỗi
+        }
+        callback(null, results); // Gọi callback với kết quả
+    });
+},
 };
 
 module.exports = ChiTietPhieuXuat;
