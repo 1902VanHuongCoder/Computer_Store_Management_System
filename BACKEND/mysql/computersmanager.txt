@@ -99,6 +99,23 @@ CREATE TABLE ChiTietPhieuXuat (
 );
 
 -- NHÀ SẢN XUẤT ------------------------------
+DELIMITER //
+CREATE FUNCTION IsValidTenNSX(p_TenNSX VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_TenNSX IS NOT NULL AND p_TenNSX <> '');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidQuocGia(p_QuocGia VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_QuocGia IS NOT NULL AND p_QuocGia <> '');
+END //
+DELIMITER ;
 -- 2. Tạo Trigger để kiểm tra dữ liệu trước khi thêm mới nhà sản xuất
 DELIMITER //
 CREATE TRIGGER BeforeInsertNhaSanXuat
@@ -106,18 +123,20 @@ BEFORE INSERT ON NhaSanXuat
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên nhà sản xuất không được để trống
-    IF NEW.TenNSX IS NULL OR NEW.TenNSX = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Tên nhà sản xuất không được để trống'; -- Thông báo lỗi
+    IF NOT IsValidTenNSX(NEW.TenNSX) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Tên nhà sản xuất không được để trống'; 
     END IF;
+
     -- Kiểm tra quốc gia không được để trống
-    IF NEW.QuocGia IS NULL OR NEW.QuocGia = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Quốc gia không được để trống'; -- Thông báo lỗi
+    IF NOT IsValidQuocGia(NEW.QuocGia) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Quốc gia không được để trống'; 
     END IF;
 END //
 DELIMITER ;
 
+DROP TRIGGER IF EXISTS BeforeInsertNhaSanXuat;
 -- 3. Tạo Stored Procedure để lấy tất cả nhà sản xuất
 DELIMITER //
 CREATE PROCEDURE GetAllNhaSanXuat()
@@ -200,15 +219,15 @@ BEFORE UPDATE ON NhaSanXuat
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên nhà sản xuất không được để trống khi cập nhật
-    IF NEW.TenNSX IS NULL OR NEW.TenNSX = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Tên nhà sản xuất không được để trống'; -- Thông báo lỗi
+    IF NOT IsValidTenNSX(NEW.TenNSX) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Tên nhà sản xuất không được để trống'; 
     END IF;
 
     -- Kiểm tra quốc gia không được để trống khi cập nhật
-    IF NEW.QuocGia IS NULL OR NEW.QuocGia = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Quốc gia không được để trống'; -- Thông báo lỗi
+    IF NOT IsValidQuocGia(NEW.QuocGia) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Quốc gia không được để trống'; 
     END IF;
 END //
 DELIMITER ;
@@ -216,6 +235,35 @@ DELIMITER ;
 DROP TRIGGER IF EXISTS BeforeUpdateNhaSanXuat;
 
 -- NHÀ CUNG CẤP ------------------------------
+DELIMITER //
+CREATE FUNCTION IsValidTenNhaCungCap(p_TenNhaCungCap VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_TenNhaCungCap IS NOT NULL AND p_TenNhaCungCap <> '');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidSoDienThoai(p_SoDienThoai VARCHAR(20)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_SoDienThoai IS NOT NULL AND 
+            LENGTH(p_SoDienThoai) = 10 AND 
+            p_SoDienThoai REGEXP '^[0-9]+$' AND 
+            p_SoDienThoai LIKE '0%');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidDiaChi(p_DiaChi TEXT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_DiaChi IS NOT NULL AND p_DiaChi <> '');
+END //
+DELIMITER ;
 -- 1. Tạo Trigger để kiểm tra dữ liệu trước khi thêm mới nhà cung cấp
 DELIMITER //
 CREATE TRIGGER BeforeInsertNhaCungCap
@@ -223,34 +271,24 @@ BEFORE INSERT ON NhaCungCap
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên nhà cung cấp không được để trống
-    IF NEW.TenNhaCungCap IS NULL OR NEW.TenNhaCungCap = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Tên nhà cung cấp không được để trống'; -- Thông báo lỗi
+    IF NOT IsValidTenNhaCungCap(NEW.TenNhaCungCap) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Tên nhà cung cấp không được để trống'; 
     END IF;
 
     -- Kiểm tra số điện thoại
-    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+    IF NOT IsValidSoDienThoai(NEW.SoDienThoai) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
-    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
-    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
-    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
+        SET MESSAGE_TEXT = 'Số điện thoại không hợp lệ'; 
     END IF;
 
     -- Kiểm tra địa chỉ không được để trống
-    IF NEW.DiaChi IS NULL OR NEW.DiaChi = '' THEN
+    IF NOT IsValidDiaChi(NEW.DiaChi) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Địa chỉ không được để trống'; 
     END IF;
 END //
 DELIMITER ;
-DROP TRIGGER IF EXISTS BeforeInsertNhaCungCap;
 
 -- 2. Tạo Stored Procedure để lấy tất cả nhà cung cấp
 DELIMITER //
@@ -334,39 +372,27 @@ BEGIN
     WHERE MaNhaCungCap = p_MaNhaCungCap;
 END //
 DELIMITER ;
-DROP PROCEDURE IF EXISTS UpdateNhaCungCap;
 
 -- kiểm tra khi cập nhật
 DELIMITER //
-DROP TRIGGER IF EXISTS BeforeUpdateNhaCungCap;
-
 CREATE TRIGGER BeforeUpdateNhaCungCap
 BEFORE UPDATE ON NhaCungCap
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên nhà cung cấp không được để trống khi cập nhật
-    IF NEW.TenNhaCungCap IS NULL OR NEW.TenNhaCungCap = '' THEN
+    IF NOT IsValidTenNhaCungCap(NEW.TenNhaCungCap) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Tên nhà cung cấp không được để trống khi cập nhật';
     END IF;
 
     -- Kiểm tra số điện thoại khi cập nhật
-    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+    IF NOT IsValidSoDienThoai(NEW.SoDienThoai) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
-    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
-    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
-    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
+        SET MESSAGE_TEXT = 'Số điện thoại không hợp lệ'; 
     END IF;
-    
+
     -- Kiểm tra địa chỉ không được để trống
-    IF NEW.DiaChi IS NULL OR NEW.DiaChi = '' THEN
+    IF NOT IsValidDiaChi(NEW.DiaChi) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Địa chỉ không được để trống'; 
     END IF;
@@ -374,6 +400,23 @@ END //
 DELIMITER ;
 
 -- LOẠI THIET BỊ ------------------------------
+DELIMITER //
+CREATE FUNCTION IsValidTenLoai(p_TenLoai VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_TenLoai IS NOT NULL AND p_TenLoai <> '');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidDonViTinh(p_DonViTinh VARCHAR(50)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_DonViTinh IS NOT NULL AND p_DonViTinh <> '');
+END //
+DELIMITER ;
 -- 1. Tạo Trigger để kiểm tra dữ liệu
 DELIMITER //
 CREATE TRIGGER BeforeInsertLoaiThietBi
@@ -381,18 +424,19 @@ BEFORE INSERT ON LoaiThietBi
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên loại thiết bị không được để trống
-    IF NEW.TenLoai IS NULL OR NEW.TenLoai = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Tên loại thiết bị không được để trống'; -- Thông báo lỗi
+    IF NOT IsValidTenLoai(NEW.TenLoai) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Tên loại thiết bị không được để trống'; 
     END IF;
+
     -- Kiểm tra đơn vị tính không được để trống
-    IF NEW.DonViTinh IS NULL OR NEW.DonViTinh = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Đơn vị tính không được để trống'; -- Thông báo lỗi
+    IF NOT IsValidDonViTinh(NEW.DonViTinh) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Đơn vị tính không được để trống'; 
     END IF;
 END //
 DELIMITER ;
-
+DROP TRIGGER IF EXISTS BeforeInsertLoaiThietBi;
 -- 2. Lấy tất cả
 DELIMITER //
 CREATE PROCEDURE GetAllLoaiThietBi()
@@ -422,7 +466,6 @@ BEGIN
     VALUES (p_TenLoai, p_DonViTinh, p_GhiChu);
 END //
 DELIMITER ;
-DROP PROCEDURE IF EXISTS AddLoaiThietBi;
 -- Kiểm tra trước khi xóa
 DELIMITER //
 
@@ -449,7 +492,6 @@ BEGIN
     DELETE FROM LoaiThietBi WHERE MaLoai = p_MaLoai;
 END //
 DELIMITER ;
-DROP PROCEDURE IF EXISTS DeleteLoaiThietBi;
 
 -- 6. Chỉnh sửa loại thiết bị
 DELIMITER //
@@ -467,7 +509,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS UpdateLoaiThietBi;
 -- 7. Tạo Trigger để kiểm tra khi cập nhật loại thiết bị
 DELIMITER //
 CREATE TRIGGER BeforeUpdateLoaiThietBi
@@ -475,19 +516,49 @@ BEFORE UPDATE ON LoaiThietBi
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên loại thiết bị không được để trống khi cập nhật
-    IF NEW.TenLoai IS NULL OR NEW.TenLoai = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Tên loại thiết bị không được để trống'; -- Thông báo lỗi
+    IF NOT IsValidTenLoai(NEW.TenLoai) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Tên loại thiết bị không được để trống'; 
     END IF;
+
     -- Kiểm tra đơn vị tính không được để trống khi cập nhật
-    IF NEW.DonViTinh IS NULL OR NEW.DonViTinh = '' THEN
-        SIGNAL SQLSTATE '45000' -- Phát tín hiệu lỗi
-        SET MESSAGE_TEXT = 'Đơn vị tính không được để trống'; -- Thông báo lỗi
+    IF NOT IsValidDonViTinh(NEW.DonViTinh) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Đơn vị tính không được để trống'; 
     END IF;
 END //
 DELIMITER ;
 
 -- KHÁCH HÀNG -------------
+DELIMITER //
+CREATE FUNCTION IsValidTenKhachHang(p_TenKhachHang VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_TenKhachHang IS NOT NULL AND p_TenKhachHang <> '');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidSoDienThoaiKhachHang(p_SoDienThoai VARCHAR(20)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_SoDienThoai IS NOT NULL AND 
+            LENGTH(p_SoDienThoai) = 10 AND 
+            p_SoDienThoai REGEXP '^[0-9]+$' AND 
+            p_SoDienThoai LIKE '0%');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidDiaChiKhachHang(p_DiaChi TEXT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_DiaChi IS NOT NULL AND p_DiaChi <> '');
+END //
+DELIMITER ;
 -- 1. Kiểm tra trước khi thêm
 DELIMITER //
 CREATE TRIGGER BeforeInsertKhachHang
@@ -495,30 +566,21 @@ BEFORE INSERT ON KhachHang
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên khách hàng không được để trống
-    IF NEW.TenKhachHang IS NULL OR NEW.TenKhachHang = '' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Tên khách hàng không được để trống';
+    IF NOT IsValidTenKhachHang(NEW.TenKhachHang) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Tên khách hàng không được để trống'; 
     END IF;
-    
-    -- Kiểm tra số điện thoại không được để trống và chỉ chứa số
-    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
-    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
-    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
-    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
+
+    -- Kiểm tra số điện thoại
+    IF NOT IsValidSoDienThoaiKhachHang(NEW.SoDienThoai) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Số điện thoại không hợp lệ'; 
     END IF;
 
     -- Kiểm tra địa chỉ không được để trống
-    IF NEW.DiaChi IS NULL OR NEW.DiaChi = '' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Địa chỉ không được để trống';
+    IF NOT IsValidDiaChiKhachHang(NEW.DiaChi) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Địa chỉ không được để trống'; 
     END IF;
 END //
 DELIMITER ;
@@ -606,34 +668,24 @@ BEFORE UPDATE ON KhachHang
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên khách hàng không được để trống khi cập nhật
-    IF NEW.TenKhachHang IS NULL OR NEW.TenKhachHang = '' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Tên khách hàng không được để trống';
+    IF NOT IsValidTenKhachHang(NEW.TenKhachHang) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Tên khách hàng không được để trống'; 
     END IF;
 
     -- Kiểm tra số điện thoại khi cập nhật
-    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
-    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
-    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
-    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
+    IF NOT IsValidSoDienThoaiKhachHang(NEW.SoDienThoai) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Số điện thoại không hợp lệ'; 
     END IF;
 
     -- Kiểm tra địa chỉ không được để trống
-    IF NEW.DiaChi IS NULL OR NEW.DiaChi = '' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Địa chỉ không được để trống';
+    IF NOT IsValidDiaChiKhachHang(NEW.DiaChi) THEN
+        SIGNAL SQLSTATE '45000' 
+        SET MESSAGE_TEXT = 'Địa chỉ không được để trống'; 
     END IF;
 END //
 DELIMITER ;
-
 DROP TRIGGER IF EXISTS BeforeUpdateKhachHang;
 
 ALTER TABLE chiTietPhieuNhap DROP FOREIGN KEY chiTietPhieuNhap_ibfk_2;  
@@ -648,6 +700,53 @@ ADD COLUMN ChucVu VARCHAR(255),
 ADD COLUMN MatKhau VARCHAR(255);
 
 -- NHÂN VIÊN ------------
+DELIMITER //
+CREATE FUNCTION IsValidHoTen(p_HoTen VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_HoTen IS NOT NULL AND p_HoTen <> '');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidSoDienThoaiNhanVien(p_SoDienThoai VARCHAR(20)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_SoDienThoai IS NOT NULL AND 
+            LENGTH(p_SoDienThoai) = 10 AND 
+            p_SoDienThoai REGEXP '^[0-9]+$' AND 
+            p_SoDienThoai LIKE '0%');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidNgaySinh(p_NgaySinh DATE) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_NgaySinh IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidChucVu(p_ChucVu VARCHAR(100)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_ChucVu IS NOT NULL AND p_ChucVu <> '');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidMatKhau(p_MatKhau VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MatKhau IS NOT NULL AND LENGTH(p_MatKhau) >= 6);
+END //
+DELIMITER ;
 -- 1. Kiểm tra
 DELIMITER //
 CREATE TRIGGER BeforeInsertNhanVien
@@ -661,50 +760,37 @@ BEGIN
     END IF;
 
     -- Kiểm tra tên nhân viên không được để trống
-    IF NEW.HoTen IS NULL OR NEW.HoTen = '' THEN
+    IF NOT IsValidHoTen(NEW.HoTen) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Tên nhân viên không được để trống';
     END IF;
-    
+
     -- Kiểm tra số điện thoại
-    IF NEW.SoDienThoai IS NULL OR NEW.SoDienThoai = '' THEN
+    IF NOT IsValidSoDienThoaiNhanVien(NEW.SoDienThoai) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại không được để trống'; 
-    ELSEIF LENGTH(NEW.SoDienThoai) != 10 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải có đúng 10 số'; 
-    ELSEIF NEW.SoDienThoai NOT REGEXP '^[0-9]+$' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại chỉ được chứa các ký tự số'; 
-    ELSEIF NEW.SoDienThoai NOT LIKE '0%' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số điện thoại phải bắt đầu bằng số 0'; 
+        SET MESSAGE_TEXT = 'Số điện thoại không hợp lệ'; 
     END IF;
-    
+
     -- Kiểm tra ngày sinh không được để trống
-    IF NEW.NgaySinh IS NULL THEN
+    IF NOT IsValidNgaySinh(NEW.NgaySinh) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Ngày sinh không được để trống'; 
     END IF;
 
     -- Kiểm tra chức vụ không được để trống
-    IF NEW.ChucVu IS NULL OR NEW.ChucVu = '' THEN
+    IF NOT IsValidChucVu(NEW.ChucVu) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Chức vụ không được để trống';
     END IF;
 
     -- Kiểm tra mật khẩu không được để trống và phải có ít nhất 6 ký tự
-    IF NEW.MatKhau IS NULL OR NEW.MatKhau = '' THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Mật khẩu không được để trống';
-    ELSEIF LENGTH(NEW.MatKhau) < 6 THEN
+    IF NOT IsValidMatKhau(NEW.MatKhau) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mật khẩu phải có ít nhất 6 ký tự';
     END IF;
 END //
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS BeforeInsertNhanVien;
 -- 2. Lấy tất cả
 DELIMITER //
 CREATE PROCEDURE GetAllNhanVien()
@@ -792,26 +878,25 @@ DELIMITER ;
 
 -- 8. Kiểm tra
 DELIMITER //
-
 CREATE TRIGGER BeforeUpdateNhanVien
 BEFORE UPDATE ON NhanVien
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên nhân viên không được để trống khi cập nhật
-    IF NEW.HoTen IS NULL OR NEW.HoTen = '' THEN
+    IF NOT IsValidHoTen(NEW.HoTen) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Tên nhân viên không được để trống';
     END IF;
 
     -- Kiểm tra chức vụ không được để trống khi cập nhật
-    IF NEW.ChucVu IS NULL OR NEW.ChucVu = '' THEN
+    IF NOT IsValidChucVu(NEW.ChucVu) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Chức vụ không được để trống';
     END IF;
 
     -- Kiểm tra mật khẩu chỉ khi người dùng nhập mật khẩu mới
     IF NEW.MatKhau IS NOT NULL AND NEW.MatKhau != '' THEN
-        IF LENGTH(NEW.MatKhau) < 6 THEN
+        IF NOT IsValidMatKhau(NEW.MatKhau) THEN
             SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Mật khẩu phải có ít nhất 6 ký tự';
         END IF;
@@ -820,10 +905,7 @@ BEGIN
         SET NEW.MatKhau = OLD.MatKhau;
     END IF;
 END //
-
 DELIMITER ;
-
-DROP TRIGGER IF EXISTS BeforeUpdateNhanVien;
 
 -- Đăng nhập ------------------------
 DELIMITER //
@@ -854,6 +936,68 @@ DELIMITER ;
 
 DROP PROCEDURE IF EXISTS Login;
 -- THIẾT BỊ ------------------------------
+DELIMITER //
+CREATE FUNCTION IsValidTenThietBi(p_TenThietBi VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_TenThietBi IS NOT NULL AND p_TenThietBi <> '');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidThongSoKT(p_ThongSoKT TEXT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_ThongSoKT IS NOT NULL AND p_ThongSoKT <> '');
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidMaNSX(p_MaNSX INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaNSX IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidMaLoai(p_MaLoai INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaLoai IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidMaNhaCungCap(p_MaNhaCungCap INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaNhaCungCap IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidGiaThanhNotNull(p_GiaThanh INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_GiaThanh IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidGiaThanhNotNegative(p_GiaThanh INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_GiaThanh >= 0);
+END //
+DELIMITER ;
 -- 1. Kiểm tra trước khi thêm thiết bị
 DELIMITER //
 CREATE TRIGGER BeforeInsertThietBi
@@ -861,43 +1005,43 @@ BEFORE INSERT ON ThietBi
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên thiết bị không được để trống
-    IF NEW.TenThietBi IS NULL OR NEW.TenThietBi = '' THEN
+    IF NOT IsValidTenThietBi(NEW.TenThietBi) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Tên thiết bị không được để trống';
     END IF;
 
     -- Kiểm tra giá thành không được để trống
-    IF NEW.GiaThanh IS NULL OR NEW.GiaThanh = '' THEN
+    IF NOT IsValidGiaThanhNotNull(NEW.GiaThanh) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Giá thành không được để trống';
     END IF;
 
     -- Kiểm tra giá thành không được âm
-    IF NEW.GiaThanh < 0 THEN
+    IF NOT IsValidGiaThanhNotNegative(NEW.GiaThanh) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Giá thành không được âm';
     END IF;
 
     -- Kiểm tra thông số kỹ thuật không được để trống
-    IF NEW.ThongSoKT IS NULL OR NEW.ThongSoKT = '' THEN
+    IF NOT IsValidThongSoKT(NEW.ThongSoKT) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Thông số kỹ thuật không được để trống';
     END IF;
 
     -- Kiểm tra mã nhà sản xuất không được để trống
-    IF NEW.MaNSX IS NULL OR NEW.MaNSX = '' THEN
+    IF NOT IsValidMaNSX(NEW.MaNSX) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhà sản xuất không được để trống';
     END IF;
 
     -- Kiểm tra mã loại thiết bị không được để trống
-    IF NEW.MaLoai IS NULL OR NEW.MaLoai = '' THEN
+    IF NOT IsValidMaLoai(NEW.MaLoai) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã loại thiết bị không được để trống';
     END IF;
 
     -- Kiểm tra mã nhà cung cấp không được để trống
-    IF NEW.MaNhaCungCap IS NULL OR NEW.MaNhaCungCap = '' THEN
+    IF NOT IsValidMaNhaCungCap(NEW.MaNhaCungCap) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhà cung cấp không được để trống';
     END IF;
@@ -922,7 +1066,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS BeforeInsertThietBi;
 -- 2. Lấy tất cả thiết bị
 DELIMITER //
 CREATE PROCEDURE GetAllThietBi()
@@ -946,43 +1089,43 @@ BEFORE UPDATE ON ThietBi
 FOR EACH ROW
 BEGIN
     -- Kiểm tra tên thiết bị không được để trống
-    IF NEW.TenThietBi IS NULL OR NEW.TenThietBi = '' THEN
+    IF NOT IsValidTenThietBi(NEW.TenThietBi) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Tên thiết bị không được để trống';
     END IF;
 
     -- Kiểm tra giá thành không được để trống
-    IF NEW.GiaThanh IS NULL OR NEW.GiaThanh = '' THEN
+    IF NOT IsValidGiaThanhNotNull(NEW.GiaThanh) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Giá thành không được để trống';
     END IF;
 
     -- Kiểm tra giá thành không được âm
-    IF NEW.GiaThanh < 0 THEN
+    IF NOT IsValidGiaThanhNotNegative(NEW.GiaThanh) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Giá thành không được âm';
     END IF;
 
     -- Kiểm tra thông số kỹ thuật không được để trống
-    IF NEW.ThongSoKT IS NULL OR NEW.ThongSoKT = '' THEN
+    IF NOT IsValidThongSoKT(NEW.ThongSoKT) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Thông số kỹ thuật không được để trống';
     END IF;
 
     -- Kiểm tra mã nhà sản xuất không được để trống
-    IF NEW.MaNSX IS NULL OR NEW.MaNSX = '' THEN
+    IF NOT IsValidMaNSX(NEW.MaNSX) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhà sản xuất không được để trống';
     END IF;
 
     -- Kiểm tra mã loại thiết bị không được để trống
-    IF NEW.MaLoai IS NULL OR NEW.MaLoai = '' THEN
+    IF NOT IsValidMaLoai(NEW.MaLoai) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã loại thiết bị không được để trống';
     END IF;
 
     -- Kiểm tra mã nhà cung cấp không được để trống
-    IF NEW.MaNhaCungCap IS NULL OR NEW.MaNhaCungCap = '' THEN
+    IF NOT IsValidMaNhaCungCap(NEW.MaNhaCungCap) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhà cung cấp không được để trống';
     END IF;
@@ -1007,7 +1150,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS BeforeUpdateThietBi;
 -- 4. Thêm thiết bị
 DELIMITER //
 CREATE PROCEDURE AddThietBi(
@@ -1073,7 +1215,6 @@ BEGIN
     DELETE FROM ThietBi WHERE MaThietBi = p_MaThietBi;
 END //
 DELIMITER ;
-DROP PROCEDURE IF EXISTS DeleteThietBi;
 
 -- THÔNG TIN PHIẾU NHẬP ------------
 ALTER TABLE ChiTietPhieuNhap ADD CONSTRAINT fk_chitietphieunhap_mapn FOREIGN KEY (MaPN) REFERENCES PhieuNhap(MaPN); -- Thêm lại khóa ngoại
@@ -1085,6 +1226,23 @@ ALTER TABLE PhieuNhap ADD CONSTRAINT fk_phieunhap_manhanvien FOREIGN KEY (MaNhan
 ALTER TABLE PhieuXuat ADD CONSTRAINT fk_phieuxuat_makhachhang FOREIGN KEY (MaKhachHang) REFERENCES KhachHang(MaKhachHang); -- Thêm lại khóa ngoại
 ALTER TABLE PhieuXuat ADD CONSTRAINT fk_phieuxuat_manhanvien FOREIGN KEY (MaNhanVien) REFERENCES NhanVien(MaNhanVien); -- Thêm lại khóa ngoại
 
+DELIMITER //
+CREATE FUNCTION IsValidMaNhanVien(p_MaNhanVien VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaNhanVien IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidNhaCungCapID(p_MaNhaCungCap INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaNhaCungCap IS NOT NULL);
+END //
+DELIMITER ;
 -- 1. Kiểm tra trước khi thêm
 DELIMITER //
 CREATE TRIGGER BeforeInsertPhieuNhap
@@ -1092,13 +1250,13 @@ BEFORE INSERT ON PhieuNhap
 FOR EACH ROW
 BEGIN
     -- Kiểm tra mã nhân viên không được để trống
-    IF NEW.MaNhanVien IS NULL THEN
+    IF NOT IsValidMaNhanVien(NEW.MaNhanVien) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhân viên không được để trống';
     END IF;
 
     -- Kiểm tra mã nhà cung cấp không được để trống
-    IF NEW.MaNhaCungCap IS NULL THEN
+    IF NOT IsValidNhaCungCapID(NEW.MaNhaCungCap) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhà cung cấp không được để trống';
     END IF;
@@ -1134,7 +1292,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS AddPhieuNhap;
 -- 3. Kiểm tra khi sửa
 DELIMITER //
 CREATE TRIGGER BeforeUpdatePhieuNhap
@@ -1142,13 +1299,13 @@ BEFORE UPDATE ON PhieuNhap
 FOR EACH ROW
 BEGIN
     -- Kiểm tra mã nhân viên không được để trống
-    IF NEW.MaNhanVien IS NULL THEN
+    IF NOT IsValidMaNhanVien(NEW.MaNhanVien) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhân viên không được để trống';
     END IF;
 
     -- Kiểm tra mã nhà cung cấp không được để trống
-    IF NEW.MaNhaCungCap IS NULL THEN
+    IF NOT IsValidNhaCungCapID(NEW.MaNhaCungCap) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhà cung cấp không được để trống';
     END IF;
@@ -1223,6 +1380,32 @@ END //
 DELIMITER ;
 
 -- CHI TIẾT PHIẾU NHẬP --------------
+DELIMITER //
+CREATE FUNCTION IsValidMaPN(p_MaPN INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaPN IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidMaThietBi(p_MaThietBi VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaThietBi IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidSoLuong(p_SoLuong INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_SoLuong IS NOT NULL AND p_SoLuong >= 0);
+END //
+DELIMITER ;
 -- 1. Kiểm tra thêm
 DELIMITER //
 CREATE TRIGGER BeforeInsertChiTietPhieuNhap
@@ -1230,21 +1413,21 @@ BEFORE INSERT ON ChiTietPhieuNhap
 FOR EACH ROW
 BEGIN
     -- Kiểm tra mã phiếu nhập không được để trống
-    IF NEW.MaPN IS NULL THEN
+    IF NOT IsValidMaPN(NEW.MaPN) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã phiếu nhập không được để trống';
     END IF;
 
     -- Kiểm tra mã thiết bị không được để trống
-    IF NEW.MaThietBi IS NULL THEN
+    IF NOT IsValidMaThietBi(NEW.MaThietBi) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
     END IF;
 
-    -- Kiểm tra số lượng không được âm
-    IF NEW.SoLuong < 0 THEN
+    -- Kiểm tra số lượng không được trống và không âm
+    IF NOT IsValidSoLuong(NEW.SoLuong) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'Số lượng không được âm';
+        SET MESSAGE_TEXT = 'Số lượng không được trống và không âm';
     END IF;
 
     -- Kiểm tra đơn giá không được âm
@@ -1267,7 +1450,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS BeforeInsertChiTietPhieuNhap;
 -- 2. Thêm
 DELIMITER //
 
@@ -1296,7 +1478,6 @@ END //
 
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS AddChiTietPhieuNhap;
 -- 3. Kiểm tra sửa
 DELIMITER //
 CREATE TRIGGER BeforeUpdateChiTietPhieuNhap
@@ -1341,7 +1522,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS BeforeUpdateChiTietPhieuNhap;
 -- 4. Sửa
 DELIMITER //
 
@@ -1372,7 +1552,6 @@ END //
 
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS UpdateChiTietPhieuNhap;
 -- 5. Kiểm tra xóa
 DELIMITER //
 CREATE TRIGGER BeforeDeleteChiTietPhieuNhap
@@ -1415,6 +1594,23 @@ END //
 DELIMITER ;
 
 -- PHIẾU XUẤT ----------------
+DELIMITER //
+CREATE FUNCTION IsValidNhanVienID(p_MaNhanVien VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaNhanVien IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidKhachHangID(p_MaKhachHang INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaKhachHang IS NOT NULL);
+END //
+DELIMITER ;
 -- 1. Kiểm tra trước khi thêm
 DELIMITER //
 CREATE TRIGGER BeforeInsertPhieuXuat
@@ -1422,13 +1618,13 @@ BEFORE INSERT ON PhieuXuat
 FOR EACH ROW
 BEGIN
     -- Kiểm tra mã nhân viên không được để trống
-    IF NEW.MaNhanVien IS NULL THEN
+    IF NOT IsValidNhanVienID(NEW.MaNhanVien) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhân viên không được để trống';
     END IF;
 
     -- Kiểm tra mã khách hàng không được để trống
-    IF NEW.MaKhachHang IS NULL THEN
+    IF NOT IsValidKhachHangID(NEW.MaKhachHang) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã khách hàng không được để trống';
     END IF;
@@ -1464,8 +1660,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS AddPhieuXuat;
-
 -- 3. Kiểm tra khi sửa
 DELIMITER //
 CREATE TRIGGER BeforeUpdatePhieuXuat
@@ -1473,13 +1667,13 @@ BEFORE UPDATE ON PhieuXuat
 FOR EACH ROW
 BEGIN
     -- Kiểm tra mã nhân viên không được để trống
-    IF NEW.MaNhanVien IS NULL THEN
+    IF NOT IsValidNhanVienID(NEW.MaNhanVien) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã nhân viên không được để trống';
     END IF;
 
     -- Kiểm tra mã khách hàng không được để trống
-    IF NEW.MaKhachHang IS NULL THEN
+    IF NOT IsValidKhachHangID(NEW.MaKhachHang) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã khách hàng không được để trống';
     END IF;
@@ -1512,8 +1706,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS UpdatePhieuXuat;
-
 -- 5. Kiểm tra khi xóa
 DELIMITER //
 CREATE TRIGGER BeforeDeletePhieuXuat
@@ -1538,8 +1730,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP PROCEDURE IF EXISTS DeletePhieuXuat;
-
 -- 7. Lấy all
 DELIMITER //
 CREATE PROCEDURE GetAllPhieuXuat()
@@ -1557,6 +1747,32 @@ END //
 DELIMITER ;
 
 -- CHI TIẾT PHIẾU XUẤT --------------
+DELIMITER //
+CREATE FUNCTION IsValidMaPX(p_MaPX INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaPX IS NOT NULL);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidSoLuongInput(p_SoLuong INT) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_SoLuong IS NOT NULL AND p_SoLuong >= 0);
+END //
+DELIMITER ;
+
+DELIMITER //
+CREATE FUNCTION IsValidThietBiID(p_MaThietBi VARCHAR(255)) 
+RETURNS BOOLEAN
+DETERMINISTIC
+BEGIN
+    RETURN (p_MaThietBi IS NOT NULL);
+END //
+DELIMITER ;
 -- 1. Kiểm tra thêm
 DELIMITER //
 CREATE TRIGGER BeforeInsertChiTietPhieuXuat
@@ -1564,19 +1780,19 @@ BEFORE INSERT ON ChiTietPhieuXuat
 FOR EACH ROW
 BEGIN
     -- Kiểm tra mã phiếu xuất không được để trống
-    IF NEW.MaPX IS NULL THEN
+    IF NOT IsValidMaPX(NEW.MaPX) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã hóa đơn không được để trống';
     END IF;
 
     -- Kiểm tra mã thiết bị không được để trống
-    IF NEW.MaThietBi IS NULL THEN
+    IF NOT IsValidThietBiID(NEW.MaThietBi) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
     END IF;
-    
+
     -- Kiểm tra số lượng không được âm
-    IF NEW.SoLuong < 0 THEN
+    IF NOT IsValidSoLuongInput(NEW.SoLuong) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Số lượng không được âm';
     END IF;
@@ -1595,7 +1811,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS BeforeInsertChiTietPhieuXuat;
 -- 2. Thêm
 DELIMITER //
 
@@ -1639,19 +1854,19 @@ BEFORE UPDATE ON ChiTietPhieuXuat
 FOR EACH ROW
 BEGIN
     -- Kiểm tra mã phiếu xuất không được để trống
-    IF NEW.MaPX IS NULL THEN
+    IF NOT IsValidMaPX(NEW.MaPX) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã hóa đơn không được để trống';
     END IF;
 
     -- Kiểm tra mã thiết bị không được để trống
-    IF NEW.MaThietBi IS NULL THEN
+    IF NOT IsValidThietBiID(NEW.MaThietBi) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Mã thiết bị không được để trống';
     END IF;
-    
+
     -- Kiểm tra số lượng không được âm
-    IF NEW.SoLuong < 0 THEN
+    IF NOT IsValidSoLuongInput(NEW.SoLuong) THEN
         SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Số lượng không được âm';
     END IF;
@@ -1670,7 +1885,6 @@ BEGIN
 END //
 DELIMITER ;
 
-DROP TRIGGER IF EXISTS BeforeUpdateChiTietPhieuXuat;
 -- 4. Sửa
 DELIMITER //
 

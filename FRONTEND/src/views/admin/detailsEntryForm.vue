@@ -27,7 +27,8 @@ const addDetailEntryForm = async () => {
         };
 
         const response = await axios.post("http://localhost:3000/api/chitietphieunhap", newDetailEntryForm);
-
+        const confirmDelete = confirm("Vui lòng kiểm tra lại thông tin trước khi thêm?");
+        if (!confirmDelete) return;
         showMessage('Thêm chi tiết phiếu nhập đã được thêm thành công!', 'success');
         await getDetailEntryForm();
     } catch (error) {
@@ -177,9 +178,6 @@ onMounted(() => {
                                             formatCurrency(detailEntryForm.DonGia) }}
                                         </td>
                                         <td class="flex justify-center items-center gap-2 px-7 py-7 flex-col">
-                                            <a :href="`/editDetailsEntryForm/${detailEntryForm.MaPN}/${detailEntryForm.MaThietBi}`"
-                                                class="inline-block bg-blue-primary text-white font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Sửa
-                                                chi tiết phiếu nhập</a>
                                             <form @submit.prevent="deleteDetailEntryForm(detailEntryForm.MaPN, detailEntryForm.MaThietBi)">
                                                 <button type="submit"
                                                     class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa

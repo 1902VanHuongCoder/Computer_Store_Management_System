@@ -27,10 +27,17 @@ module.exports = {
   // Thêm nhân viên mới
   addNhanVien: (req, res) => {
     const data = req.body;
-    if (!data.MatKhau) {
+    if (!data.HoTen) {
+      return res.status(400).json({ error: "Họ tên không được để trống" });
+    } else if (!data.NgaySinh) {
+      return res.status(400).json({ error: "Ngày sinh không được để trống" });
+    } else if (!data.SoDienThoai) {
+      return res.status(400).json({ error: "Số điện thoại không được để trống" });
+    } else if (!data.ChucVu) {
+      return res.status(400).json({ error: "Chức vụ không được để trống" });
+    } else if (!data.MatKhau) {
       return res.status(400).json({ error: "Mật khẩu không được để trống" });
-    }
-    if (data.MatKhau.length < 6) {
+    } else if (data.MatKhau.length < 6) {
       return res
         .status(400)
         .json({ error: "Mật khẩu phải có ít nhất 6 ký tự" });
