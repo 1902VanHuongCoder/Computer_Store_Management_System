@@ -133,7 +133,7 @@ onMounted(() => {
                             placeholder="Tìm kiếm hóa đơn ..." />
                         <i class="fa-solid fa-magnifying-glass absolute top-3 right-4 font-bold text-[25px] text-blue-primary"></i>
                     </div>
-                    <div class="h-full bg-white rounded-xl">
+                    <div class="bg-white rounded-xl">
                         <div class="text-center py-4 block lg:hidden">
                             <h2 class="font-bold text-blue-primary text-[18px]">THÔNG TIN HÓA ĐƠN</h2>
                         </div>

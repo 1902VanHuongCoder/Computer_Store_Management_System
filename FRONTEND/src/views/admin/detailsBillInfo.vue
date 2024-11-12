@@ -6,6 +6,7 @@ import sidebar from '@/components/sidebar.vue';
 import BillInfo from "./billInfo.vue";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 const detailBillInfo = ref([]);
 const idProduct = ref("");
@@ -78,8 +79,8 @@ const formatCurrency = (value) => {
     return formattedValue.toLocaleString('vi-VN') + ' ' + 'VNĐ';
 };
 
-const exportAllToPDF = async (maPX) => {
-    const doc = new jsPDF();
+// Hàm xuất dữ liệu thành file Excel
+const exportToExcel = async (maPX) => {
     try {
         const response = await axios.get(`http://localhost:3000/api/chitietphieuxuat/details/${maPX}`);
         const data = response.data.result;
@@ -89,39 +90,28 @@ const exportAllToPDF = async (maPX) => {
             return;
         }
 
-        doc.setFont("Helvetica");
+        // Chuyển đổi định dạng ngày và định dạng đơn giá
+        const formattedData = data.map(item => {
+            const localDate = new Date(item.NgayXuat);
+            const localDateString = localDate.toLocaleDateString('vi-VN'); // Chuyển đổi sang định dạng Việt Nam
 
-        doc.text(`Thông tin hóa đơn - Mã: ${maPX}`, 14, 10);
-        autoTable(doc, {
-            head: [['Mã hóa đơn', 'Mã nhân viên', 'Mã khách hàng', 'Ngày xuất']],
-            body: data.map(item => [item.MaPX, item.MaNhanVien, item.MaKhachHang, item.NgayXuat]),
-            styles: {
-                font: "Helvetica",
-                fontSize: 12,
-            },
-            headStyles: {
-                fillColor: [22, 160, 133],
-                textColor: [255, 255, 255],
-                fontStyle: 'bold',
-            },
+            return {
+                ...item,
+                NgayXuat: localDateString, // Cập nhật NgayXuat với định dạng mới
+                DonGia: formatCurrency(item.DonGia) // Định dạng đơn giá
+            };
         });
 
-        doc.addPage();
-        doc.text("Chi tiết hóa đơn", 14, 10);
-        autoTable(doc, {
-            head: [['Mã hóa đơn', 'Mã thiết bị', 'Số lượng', 'Đơn giá']],
-            body: data.map(item => [item.MaPX, item.MaThietBi, item.SoLuong, formatCurrency(item.DonGia)]),
-            styles: {
-                font: "Helvetica",
-                fontSize: 12,
-            },
-        });
+        // Tạo workbook và worksheet
+        const worksheet = XLSX.utils.json_to_sheet(formattedData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Hóa Đơn');
 
-        // Lưu file PDF
-        doc.save(`phieu_xuat_${maPX}.pdf`);
+        // Xuất file Excel
+        XLSX.writeFile(workbook, `Hóa Đơn_${maPX}.xlsx`);
     } catch (error) {
-        console.error('Lỗi khi xuất PDF:', error);
-        showMessage('Có lỗi xảy ra khi xuất PDF!', 'error');
+        console.error('Lỗi khi xuất Excel:', error);
+        showMessage('Có lỗi xảy ra khi xuất Excel!', 'error');
     }
 };
 
@@ -193,11 +183,11 @@ onMounted(() => {
                         <i
                             class="fa-solid fa-magnifying-glass absolute top-3 right-4 font-bold text-[25px] text-blue-primary"></i>
                     </div>
-                    <div class="h-full bg-white rounded-xl">
+                    <div class="bg-white rounded-xl">
                         <div class="text-center py-4 block lg:hidden">
                             <h2 class="font-bold text-blue-primary text-[18px]">CHI TIẾT HÓA ĐƠN</h2>
                         </div>
-                        <div id="all_products" class="overflow-auto">
+                        <div id="" class="overflow-auto">
                             <table class="w-full border-collapse whitespace-nowrap text-center text-sm text-gray-500">
                                 <thead class="">
                                     <tr>
@@ -225,7 +215,7 @@ onMounted(() => {
                                                     class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa
                                                     chi tiết hóa đơn</button>
                                             </form>
-                                            <form @submit.prevent="exportAllToPDF(detailBill.MaPX)">
+                                            <form @submit.prevent="exportToExcel(detailBill.MaPX)">
                                                 <button type="submit"
                                                     class="inline-block text-white font-medium bg-blue-primary py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Xuất
                                                     chi tiết hóa đơn</button>
