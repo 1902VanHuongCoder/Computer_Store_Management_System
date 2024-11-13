@@ -1,13 +1,13 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
 import axios from "axios";
 import navbar from '@/components/navbar.vue';
 import sidebar from '@/components/sidebar.vue';
 
+const route = useRoute();
+const idEntry = ref(Number(route.params.maPN) || 0);
 const detailEntryForms = ref([]);
-const idEntry = ref("");
-const idProduct = ref("");
-const quantity = ref("");
 const searchQuery = ref("");
 const notification = ref({ message: '', type: '' });
 const showMessage = (message, type) => {
@@ -17,29 +17,10 @@ const showMessage = (message, type) => {
     }, 3000);
 };
 
-const addDetailEntryForm = async () => {
-
-    try {
-        const newDetailEntryForm = {
-            MaThietBi: idProduct.value,
-            MaPN: idEntry.value,
-            SoLuong: quantity.value
-        };
-
-        const response = await axios.post("http://localhost:3000/api/chitietphieunhap", newDetailEntryForm);
-        const confirmDelete = confirm("Vui lòng kiểm tra lại thông tin trước khi thêm?");
-        if (!confirmDelete) return;
-        showMessage('Thêm chi tiết phiếu nhập đã được thêm thành công!', 'success');
-        await getDetailEntryForm();
-    } catch (error) {
-        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
-    }
-};
-
 const getDetailEntryForm = async () => {
     try {
         const response = await axios.get("http://localhost:3000/api/chitietphieunhap");
-        detailEntryForms.value = response.data;
+        detailEntryForms.value = response.data.filter(detail => detail.MaPN === idEntry.value);
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu:', error);
     }
@@ -62,22 +43,19 @@ const deleteDetailEntryForm = async (maPN, maThietBi) => {
     }
 };
 
-const filteredDetailEntryForm = computed(() => {
-    if (!searchQuery.value) {
-        return detailEntryForms.value;
-    }
-    return detailEntryForms.value.filter(detailEntryForm => {
-        return detailEntryForm.MaPN.toString().toLowerCase().includes(searchQuery.value.toLowerCase());
-    });
-});
-
 const formatCurrency = (value) => {
-    const formattedValue = value * 1000;
-    return formattedValue.toLocaleString('vi-VN') + ' ' + 'VNĐ';
+    value = value * 1000; 
+    return value.toLocaleString('vi-VN') + ' ' + 'VNĐ';
 };
 
+// const totalAmount = computed(() => {
+//     return detailEntryForms.value.reduce((acc, detailEntryForm) => {
+//         return acc + (Number(detailEntryForm.DonGia) * Number(detailEntryForm.SoLuong));
+//     }, 0);
+// });
+
 onMounted(() => {
-    getDetailEntryForm();
+    getDetailEntryForm(); 
 });
 </script>
 
@@ -166,11 +144,9 @@ onMounted(() => {
                                 </thead>
                                 <tbody class="w-full">
                                     <tr class="border-t border-slate-500"
-                                        v-for="detailEntryForm in filteredDetailEntryForm" :key="detailEntryForm.MaPN">
-                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailEntryForm.MaPN
-                                            }}</th>
-                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailEntryForm.MaThietBi }}
-                                        </th>
+                                        v-for="detailEntryForm in detailEntryForms" :key="detailEntryForm.MaPN">
+                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailEntryForm.MaPN }}</th>
+                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailEntryForm.MaThietBi }}</th>
                                         <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
                                             detailEntryForm.SoLuong
                                         }}</td>
@@ -187,6 +163,9 @@ onMounted(() => {
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                        <div class="text-right p-4">
+                            <!-- <p class="text-lg font-semibold">Tổng tiền: {{ formatCurrency(totalDonGia.value) }}</p> -->
                         </div>
                     </div>
                     <transition name="slide-fade" mode="out-in">

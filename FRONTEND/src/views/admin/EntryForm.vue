@@ -17,7 +17,6 @@ const showMessage = (message, type) => {
 };  
 
 const addEntryForm = async () => {
-
     try {
         const newEntryForm = {
             MaNhaCungCap: idSupplier.value,
@@ -166,6 +165,7 @@ onMounted(() => {
                                             <a :href="`/editEntryForm/${entryForm.MaPN}`"
                                                 class="inline-block bg-blue-primary text-white font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Sửa
                                                 phiếu nhập</a>
+                                                <router-link :to="{ path: `/detailsEntryForm/${entryForm.MaPN}` }" class="inline-block bg-green-500 text-white font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-green-600 whitespace-nowrap">Chi tiết phiếu nhập</router-link>
                                             <form @submit.prevent="deleteEntryForm(entryForm.MaPN)">
                                                 <button type="submit"
                                                     class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa

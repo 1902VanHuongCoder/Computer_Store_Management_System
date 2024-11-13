@@ -80,7 +80,7 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/detailsEntryForm",
+    path: "/detailsEntryForm/:maPN",
     name: "Details Entry Form",
     component: DetailsEntryForm,
     meta: { requiresAuth: true },

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 import navbar from '@/components/navbar.vue';
 import sidebar from '@/components/sidebar.vue';
@@ -14,6 +14,9 @@ const notification = ref({
     message: "",
     type: ""
 });
+const nhasanxuatList = ref([]);
+const nhacungcapList = ref([]);
+const loaithietbiList = ref([]);
 
 const showMessage = (message, type) => {
     notification.value = { message, type };
@@ -21,6 +24,33 @@ const showMessage = (message, type) => {
         notification.value.message = '';
     }, 3000);
 };  
+
+const fetchNhaSanXuat = async () => {
+    try {
+        const response = await axios.get("http://localhost:3000/api/nhasanxuat");
+        nhasanxuatList.value = response.data;
+    } catch (error) {
+        console.error('Error fetching manufacturer data:', error);
+    }
+};
+
+const fetchNhaCungCap = async () => {
+    try {
+        const response = await axios.get("http://localhost:3000/api/nhacungcap");
+        nhacungcapList.value = response.data;
+    } catch (error) {
+        console.error('Error fetching supplier data:', error);
+    }
+};
+
+const fetchLoaiThietBi = async () => {
+    try {
+        const response = await axios.get("http://localhost:3000/api/loaithietbi");
+        loaithietbiList.value = response.data;
+    } catch (error) {
+        console.error('Error fetching device type data:', error);
+    }
+};
 
 const addDevices = async () => {
     try {
@@ -40,6 +70,12 @@ const addDevices = async () => {
         showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 };
+
+onMounted(() => {
+    fetchNhaSanXuat();
+    fetchNhaCungCap();
+    fetchLoaiThietBi();
+});
 </script>
 
 <template>
@@ -51,7 +87,7 @@ const addDevices = async () => {
                 <div class="relative h-full overflow-hidden">
                     <div class="text-center py-4">
                         <h2 class="font-bold text-blue-primary text-[20px]">THÊM THIẾT BỊ</h2>
-                    </div>
+                    </div> 
                     <form @submit.prevent="addDevices" action="" method="POST" enctype="multipart/form-data"
                         class="w-full max-h-[calc(100vh-200px)] overflow-y-auto">
                         <div
@@ -61,9 +97,13 @@ const addDevices = async () => {
                                     <label for="idNSX"
                                         class="font-bold mb-1 block text-base text-gray-700 after:ml-0.5 after:text-red-500 after:content-['*']">Mã
                                         nhà sản xuất</label>
-                                    <input v-model="idNSX" name="idNSX" autofocus type="text" id="idNSX"
-                                        class="outline-0 p-3 block w-full rounded-md border shadow-md focus:border-blue-secondary focus:ring focus:ring-blue-secondary focus:ring-opacity-50 disabled:cursor-not-allowed"
-                                        placeholder="Nhập mã NSX ..." />
+                                    <select v-model="idNSX" name="idNSX" id="idNSX"
+                                        class="outline-0 p-3 block w-full rounded-md border shadow-md focus:border-blue-secondary focus:ring focus:ring-blue-secondary focus:ring-opacity-50 disabled:cursor-not-allowed">
+                                        <option value="" disabled selected>Chọn mã nhà sản xuất</option>
+                                        <option v-for="nsx in nhasanxuatList" :key="nsx.MaNSX" :value="nsx.MaNSX">
+                                            {{ nsx.MaNSX + " - " + nsx.TenNSX }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="">
@@ -71,9 +111,13 @@ const addDevices = async () => {
                                     <label for="idSupplier"
                                         class="font-bold mb-1 block text-base text-gray-700 after:ml-0.5 after:text-red-500 after:content-['*']">Mã
                                         nhà cung cấp</label>
-                                    <input v-model="idSupplier" name="idSupplier" autofocus type="text" id="idSupplier"
-                                        class="outline-0 p-3 block w-full rounded-md border shadow-md focus:border-blue-secondary focus:ring focus:ring-blue-secondary focus:ring-opacity-50 disabled:cursor-not-allowed"
-                                        placeholder="Nhập mã nhà cung cấp ..." />
+                                    <select v-model="idSupplier" name="idSupplier" id="idSupplier"
+                                        class="outline-0 p-3 block w-full rounded-md border shadow-md focus:border-blue-secondary focus:ring focus:ring-blue-secondary focus:ring-opacity-50 disabled:cursor-not-allowed">
+                                        <option value="" disabled selected>Chọn mã nhà cung cấp</option>
+                                        <option v-for="supplier in nhacungcapList" :key="supplier.MaNhaCungCap" :value="supplier.MaNhaCungCap">
+                                            {{ supplier.MaNhaCungCap + " - " + supplier.TenNhaCungCap }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="">
@@ -81,9 +125,13 @@ const addDevices = async () => {
                                     <label for="idType"
                                         class="font-bold mb-1 block text-base text-gray-700 after:ml-0.5 after:text-red-500 after:content-['*']">Mã
                                         loại</label>
-                                    <input v-model="idType" name="idType" autofocus type="text" id="idType"
-                                        class="outline-0 p-3 block w-full rounded-md border shadow-md focus:border-blue-secondary focus:ring focus:ring-blue-secondary focus:ring-opacity-50 disabled:cursor-not-allowed"
-                                        placeholder="Nhập mã loại ..." />
+                                    <select v-model="idType" name="idType" id="idType"
+                                        class="outline-0 p-3 block w-full rounded-md border shadow-md focus:border-blue-secondary focus:ring focus:ring-blue-secondary focus:ring-opacity-50 disabled:cursor-not-allowed">
+                                        <option value="" disabled selected>Chọn mã loại</option>
+                                        <option v-for="type in loaithietbiList" :key="type.MaLoai" :value="type.MaLoai">
+                                            {{ type.MaLoai + " - " + type.TenLoai }}
+                                        </option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="">
