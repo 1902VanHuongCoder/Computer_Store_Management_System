@@ -104,7 +104,7 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
-    path: "/detailsBillInfo",
+    path: "/detailsBillInfo/:maPX",
     name: "Details Bill Info",
     component: DetailsBillInfo,
     meta: { requiresAuth: true },

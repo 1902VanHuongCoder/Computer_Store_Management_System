@@ -7,5 +7,6 @@ router.get('/phieunhap/:MaPN', chitietphieunhapController.getChiTietPhieuNhapByI
 router.post('/', chitietphieunhapController.addChiTietPhieuNhap);
 router.put('/:MaPN/:MaThietBi', chitietphieunhapController.updateChiTietPhieuNhap);
 router.delete('/:MaPN/:MaThietBi', chitietphieunhapController.deleteChiTietPhieuNhap);
+router.get('/details/:MaPN', chitietphieunhapController.getPhieuNhapWithDetailsById);
 
 module.exports = router;

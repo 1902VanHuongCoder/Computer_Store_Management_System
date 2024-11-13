@@ -41,11 +41,6 @@ const sidebarMenu = [
         path: "entryForm",
     },
     { name: "Thông tin hóa đơn", icon: "fa-solid fa-scroll", path: "billInfo" },
-    {
-        name: "Chi tiết hóa đơn",
-        icon: "fa-solid fa-money-bills",
-        path: "detailsBillInfo",
-    },
 ];
 
 const filteredSidebarMenu = computed(() => {

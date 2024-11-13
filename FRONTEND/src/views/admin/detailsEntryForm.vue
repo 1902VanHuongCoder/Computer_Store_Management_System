@@ -4,9 +4,12 @@ import { useRoute } from "vue-router";
 import axios from "axios";
 import navbar from '@/components/navbar.vue';
 import sidebar from '@/components/sidebar.vue';
+import * as XLSX from 'xlsx';
 
 const route = useRoute();
 const idEntry = ref(Number(route.params.maPN) || 0);
+const idProduct = ref("");
+const quantity = ref("");
 const detailEntryForms = ref([]);
 const searchQuery = ref("");
 const notification = ref({ message: '', type: '' });
@@ -23,6 +26,23 @@ const getDetailEntryForm = async () => {
         detailEntryForms.value = response.data.filter(detail => detail.MaPN === idEntry.value);
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu:', error);
+    }
+};
+
+const addDetailEntryForm = async () => {
+    try {
+        const newDetailEntryForm = {
+            MaThietBi: idProduct.value,
+            MaPN: idEntry.value,
+            SoLuong: quantity.value
+        };
+        const response = await axios.post("http://localhost:3000/api/chitietphieunhap", newDetailEntryForm);
+        const confirmDelete = confirm("Vui lòng kiểm tra lại thông tin trước khi thêm?");
+        if (!confirmDelete) return;
+        showMessage('Thêm chi tiết phiếu nhập đã được thêm thành công!', 'success');
+        await getDetailEntryForm();
+    } catch (error) {
+        showMessage(error.response?.data?.error || 'Có lỗi xảy ra, vui lòng thử lại!', 'error');
     }
 };
 
@@ -43,6 +63,19 @@ const deleteDetailEntryForm = async (maPN, maThietBi) => {
     }
 };
 
+const filteredDetailEntryForm = computed(() => {
+    if (!searchQuery.value) {
+        return detailEntryForms.value;
+    }
+    return detailEntryForms.value.filter(detailEntryForm => {
+        return (
+            detailEntryForm.MaPN.toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            detailEntryForm.MaThietBi.toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            detailEntryForm.SoLuong.toString().toLowerCase().includes(searchQuery.value.toLowerCase())
+        );
+    });
+});
+
 const formatCurrency = (value) => {
     value = value * 1000; 
     return value.toLocaleString('vi-VN') + ' ' + 'VNĐ';
@@ -53,6 +86,41 @@ const formatCurrency = (value) => {
 //         return acc + (Number(detailEntryForm.DonGia) * Number(detailEntryForm.SoLuong));
 //     }, 0);
 // });
+
+const exportToExcel = async (maPN) => {
+    try {
+        const response = await axios.get(`http://localhost:3000/api/chitietphieunhap/details/${maPN}`);
+        const data = response.data.result;
+
+        if (!Array.isArray(data) || data.length === 0) {
+            showMessage('Không có dữ liệu để xuất!', 'error');
+            return;
+        }
+
+        // Chuyển đổi định dạng ngày và định dạng đơn giá
+        const formattedData = data.map(item => {
+            const localDate = new Date(item.NgayNhap);
+            const localDateString = localDate.toLocaleDateString('vi-VN'); // Chuyển đổi sang định dạng Việt Nam
+
+            return {
+                ...item,
+                NgayNhap: localDateString, // Cập nhật NgayNhap với định dạng mới
+                DonGia: formatCurrency(item.DonGia) // Định dạng đơn giá
+            };
+        });
+
+        // Tạo workbook và worksheet
+        const worksheet = XLSX.utils.json_to_sheet(formattedData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Hóa Đơn');
+
+        // Xuất file Excel
+        XLSX.writeFile(workbook, `Phiếu nhập_${maPN}.xlsx`);
+    } catch (error) {
+        console.error('Lỗi khi xuất Excel:', error);
+        showMessage('Có lỗi xảy ra khi xuất Excel!', 'error');
+    }
+};
 
 onMounted(() => {
     getDetailEntryForm(); 
@@ -144,7 +212,7 @@ onMounted(() => {
                                 </thead>
                                 <tbody class="w-full">
                                     <tr class="border-t border-slate-500"
-                                        v-for="detailEntryForm in detailEntryForms" :key="detailEntryForm.MaPN">
+                                        v-for="detailEntryForm in filteredDetailEntryForm" :key="detailEntryForm.MaPN">
                                         <th class="px-6 py-4 font-medium text-gray-900">{{ detailEntryForm.MaPN }}</th>
                                         <th class="px-6 py-4 font-medium text-gray-900">{{ detailEntryForm.MaThietBi }}</th>
                                         <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
@@ -164,8 +232,14 @@ onMounted(() => {
                                 </tbody>
                             </table>
                         </div>
-                        <div class="text-right p-4">
-                            <!-- <p class="text-lg font-semibold">Tổng tiền: {{ formatCurrency(totalDonGia.value) }}</p> -->
+                        <hr class="bg-blue-primary h-[2px]">
+                        <div class="pb-4 pt-9 px-8 flex justify-end items-center gap-7 flex-col lg:flex-row">
+                            <p class="text-lg font-semibold mb-4">Tổng tiền: <span class="text-blue-primary">300.000.000 VNĐ</span></p>
+                            <form @submit.prevent="exportToExcel(idEntry)">
+                                <button type="submit"
+                                    class="inline-block text-white font-medium bg-blue-primary py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Xuất
+                                    chi tiết phiếu nhập</button>
+                            </form>
                         </div>
                     </div>
                     <transition name="slide-fade" mode="out-in">

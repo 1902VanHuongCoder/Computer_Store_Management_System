@@ -3,14 +3,13 @@ import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import navbar from '@/components/navbar.vue';
 import sidebar from '@/components/sidebar.vue';
-import BillInfo from "./billInfo.vue";
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { useRoute } from "vue-router";
 
+const route = useRoute();
 const detailBillInfo = ref([]);
 const idProduct = ref("");
-const idBill = ref("");
+const idBill = ref(Number(route.params.maPX) || 0);
 const quantity = ref("");
 const searchQuery = ref("");
 const notification = ref({ message: '', type: '' });
@@ -19,7 +18,7 @@ const showMessage = (message, type) => {
     setTimeout(() => {
         notification.value.message = '';
     }, 3000);
-};  
+};
 
 const addDetailBillInfo = async () => {
     try {
@@ -42,7 +41,7 @@ const addDetailBillInfo = async () => {
 const getDetailBillInfo = async () => {
     try {
         const response = await axios.get("http://localhost:3000/api/chitietphieuxuat");
-        detailBillInfo.value = response.data;
+        detailBillInfo.value = response.data.filter(detail => detail.MaPX === idBill.value);
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu:', error);
     }
@@ -70,7 +69,11 @@ const filteredDetailBillInfo = computed(() => {
         return detailBillInfo.value;
     }
     return detailBillInfo.value.filter(detailBill => {
-        return detailBill.MaPX.toString().toLowerCase().includes(searchQuery.value.toLowerCase());
+        return (
+            detailBill.MaPX.toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            detailBill.MaThietBi.toString().toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+            detailBill.SoLuong.toString().toLowerCase().includes(searchQuery.value.toLowerCase())
+        );
     });
 });
 
@@ -141,22 +144,27 @@ onMounted(() => {
                                                 class="grid gap-4 gap-y-3 text-sm grid-cols-1 md:grid-cols-5"
                                                 enctype="multipart/form-data">
                                                 <div class="md:col-span-5">
-                                                    <label for="idProduct" class="font-semibold text-[16px]">Mã thiết bị</label>
-                                                    <input type="text" v-model="idProduct" name="idProduct" id="idProduct"
+                                                    <label for="idProduct" class="font-semibold text-[16px]">Mã thiết
+                                                        bị</label>
+                                                    <input type="text" v-model="idProduct" name="idProduct"
+                                                        id="idProduct"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập mã thiết bị ..." />
                                                 </div>
 
                                                 <div class="md:col-span-5">
-                                                    <label for="idBill" class="font-semibold text-[16px]">Mã hóa đơn</label>
+                                                    <label for="idBill" class="font-semibold text-[16px]">Mã hóa
+                                                        đơn</label>
                                                     <input type="text" v-model="idBill" name="idBill" id="idBill"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập mã hóa đơn ..." />
                                                 </div>
 
                                                 <div class="md:col-span-5">
-                                                    <label for="quantity" class="font-semibold text-[16px]">Số lượng</label>
-                                                    <input type="number" v-model="quantity" name="quantity" id="quantity"
+                                                    <label for="quantity" class="font-semibold text-[16px]">Số
+                                                        lượng</label>
+                                                    <input type="number" v-model="quantity" name="quantity"
+                                                        id="quantity"
                                                         class="h-10 border mt-1 rounded px-4 w-full bg-gray-50"
                                                         placeholder="Nhập số lượng ..." />
                                                 </div>
@@ -199,30 +207,36 @@ onMounted(() => {
                                     </tr>
                                 </thead>
                                 <tbody class="w-full">
-                                    <tr class="border-t border-slate-500" v-for="detailBill in filteredDetailBillInfo" :key="detailBill.MaPX">
-                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailBill.MaPX }}</th>                                       
+                                    <tr class="border-t border-slate-500" v-for="detailBill in filteredDetailBillInfo"
+                                        :key="detailBill.MaPX">
+                                        <th class="px-6 py-4 font-medium text-gray-900">{{ detailBill.MaPX }}</th>
                                         <th class="px-6 py-4 font-medium text-gray-900">{{ detailBill.MaThietBi }}</th>
                                         <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
                                             detailBill.SoLuong
-                                            }}</td>
+                                        }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap overflow-hidden text-ellipsis">{{
                                             formatCurrency(detailBill.DonGia) }}
                                         </td>
                                         <td class="flex justify-center items-center gap-2 px-7 py-7 flex-col">
-                                            <form @submit.prevent="deleteDetailBillInfo(detailBill.MaPX, detailBill.MaThietBi)">
+                                            <form
+                                                @submit.prevent="deleteDetailBillInfo(detailBill.MaPX, detailBill.MaThietBi)">
                                                 <button type="submit"
                                                     class="inline-block text-white font-medium bg-[#DC143C] py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-[#B22222] whitespace-nowrap">Xóa
-                                                    chi tiết hóa đơn</button>
-                                            </form>
-                                            <form @submit.prevent="exportToExcel(detailBill.MaPX)">
-                                                <button type="submit"
-                                                    class="inline-block text-white font-medium bg-blue-primary py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Xuất
                                                     chi tiết hóa đơn</button>
                                             </form>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+                        <hr class="bg-blue-primary h-[2px]">
+                        <div class="pb-4 pt-9 px-8 flex justify-end items-center gap-7 flex-col lg:flex-row">
+                            <p class="text-lg font-semibold mb-4">Tổng tiền: <span class="text-blue-primary">300.000.000 VNĐ</span></p>
+                            <form @submit.prevent="exportToExcel(idBill)">
+                                <button type="submit"
+                                    class="inline-block text-white font-medium bg-blue-primary py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Xuất
+                                    chi tiết hóa đơn</button>
+                            </form>
                         </div>
                     </div>
                     <transition name="slide-fade" mode="out-in">

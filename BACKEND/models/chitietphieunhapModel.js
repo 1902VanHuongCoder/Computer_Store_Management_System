@@ -57,6 +57,22 @@ const ChiTietPhieuNhap = {
       callback(null, results);
     });
   },
+
+  getPDFId: (MaPN, callback) => {
+    // Thay đổi từ req, res sang MaPN, callback
+    const sql = `
+        SELECT pn.*, cpn.*
+        FROM PhieuNhap pn
+        LEFT JOIN ChiTietPhieuNhap cpn ON pn.MaPN = cpn.MaPN
+        WHERE pn.MaPN = ?
+    `;
+    db.query(sql, [MaPN], (err, results) => {
+      if (err) {
+        return callback(err); // Gọi callback với lỗi
+      }
+      callback(null, results); // Gọi callback với kết quả
+    });
+  },
 };
 
 module.exports = ChiTietPhieuNhap;

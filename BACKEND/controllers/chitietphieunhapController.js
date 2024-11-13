@@ -60,4 +60,19 @@ module.exports = {
       res.json({ message: "Xóa chi tiết phiếu nhập thành công", result });
     });
   },
+
+  getPhieuNhapWithDetailsById: (req, res) => {
+    const { MaPN } = req.params;
+    if (!MaPN) {
+      return res
+        .status(400)
+        .json({ error: "Mã phiếu nhập không được để trống" });
+    }
+    ChiTietPhieuNhap.getPDFId(MaPN, (err, result) => {
+      if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      res.json({ message: "In chi tiết phiếu nhập thành công", result });
+    });
+  },
 };

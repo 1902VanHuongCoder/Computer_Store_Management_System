@@ -4,7 +4,9 @@ module.exports = {
   getAllChiTietPhieuXuat: (req, res) => {
     ChiTietPhieuXuat.getAll((err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi lấy danh sách chi tiết phiếu xuất" });
+        return res
+          .status(500)
+          .json({ error: "Lỗi khi lấy danh sách chi tiết phiếu xuất" });
       }
       res.json(result);
     });
@@ -14,7 +16,9 @@ module.exports = {
     const { MaPX } = req.params;
     ChiTietPhieuXuat.getByMaPX(MaPX, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: "Lỗi khi lấy chi tiết phiếu xuất" });
+        return res
+          .status(500)
+          .json({ error: "Lỗi khi lấy chi tiết phiếu xuất" });
       }
       res.json(result);
     });
@@ -33,7 +37,9 @@ module.exports = {
       if (err) {
         return res.status(400).json({ error: err.message });
       }
-      res.status(201).json({ message: "Thêm chi tiết phiếu xuất thành công", result });
+      res
+        .status(201)
+        .json({ message: "Thêm chi tiết phiếu xuất thành công", result });
     });
   },
 
@@ -63,15 +69,17 @@ module.exports = {
 
   getPhieuXuatWithDetailsById: (req, res) => {
     console.log(req.params);
-        const { MaPX } = req.params;
-        if (!MaPX) {
-            return res.status(400).json({ error: "Mã phiếu xuất không được để trống" });
-        }
-        ChiTietPhieuXuat.getPDFId(MaPX, (err, result) => {
-            if (err) {
-                return res.status(400).json({ error: err.message });
-            }
-            res.json({ message: "In chi tiết phiếu xuất thành công", result });
-        });
+    const { MaPX } = req.params;
+    if (!MaPX) {
+      return res
+        .status(400)
+        .json({ error: "Mã phiếu xuất không được để trống" });
     }
+    ChiTietPhieuXuat.getPDFId(MaPX, (err, result) => {
+      if (err) {
+        return res.status(400).json({ error: err.message });
+      }
+      res.json({ message: "In chi tiết phiếu xuất thành công", result });
+    });
+  },
 };
