@@ -230,8 +230,8 @@ onMounted(() => {
                             </table>
                         </div>
                         <hr class="bg-blue-primary h-[2px]">
-                        <div class="pb-4 pt-9 px-8 flex justify-end items-center gap-7 flex-col lg:flex-row">
-                            <p class="text-lg font-semibold mb-4">Tổng tiền: <span class="text-blue-primary">300.000.000 VNĐ</span></p>
+                        <div class="pb-4 pt-9 px-8 flex justify-end items-center gap-5 flex-col lg:flex-row">
+                            <p class="text-lg font-semibold mb-4 text-blue-primary">Bạn có muốn xuất file hóa đơn này không ?</p>
                             <form @submit.prevent="exportToExcel(idBill)">
                                 <button type="submit"
                                     class="inline-block text-white font-medium bg-blue-primary py-2 px-4 mb-4 rounded-md transition-all duration-300 hover:bg-blue-secondary whitespace-nowrap">Xuất
