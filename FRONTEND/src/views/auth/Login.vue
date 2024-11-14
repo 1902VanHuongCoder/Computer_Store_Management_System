@@ -70,9 +70,11 @@ const login = async () => {
         };
 
         const response = await axios.post('http://localhost:3000/api/nhanvien/login', login);
-        const { HoTen, ChucVu } = response.data.data;
+        const { HoTen, ChucVu, MaNhanVien } = response.data.data;
+        console.log(response.data.data);
         localStorage.setItem('hoTen', HoTen);
         localStorage.setItem('chucVu', ChucVu);
+        localStorage.setItem('id', MaNhanVien);
         showMessage('Đăng nhập tài khoản thành công!', 'success');
 
         setTimeout(() => {

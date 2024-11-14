@@ -21,8 +21,10 @@ const showMessage = (message, type) => {
 
 const getStaffs = async () => {
     try {
+        const storedId = localStorage.getItem('id');
         const response = await axios.get("http://localhost:3000/api/nhanvien");
-        staffs.value = response.data;
+        staffs.value = response.data.filter(staff => staff.MaNhanVien !== storedId);
+        console.log(staffs.value);
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu:', error);
     }
